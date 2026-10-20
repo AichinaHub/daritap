@@ -1,0 +1,12 @@
+{
+  "name": "daritap",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DariTap — дәрі іздеу және тапсырыс беру демо-платформасы",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "reset": "node server.js --reset-only"
+  },
+  "engines": { "node": ">=18" }
+}
