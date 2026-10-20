@@ -1,0 +1,14 @@
+# Render.com тегін хостингіне орналастыру баптауы (Blueprint).
+# Ескерту: тегін жоспарда диск уақытша — сервер қайта іске қосылғанда
+# data/ папкасы (өтінімдер, тапсырыстар, жүктелген файлдар) демо күйіне қайтады.
+services:
+  - type: web
+    name: daritap
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/config
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
