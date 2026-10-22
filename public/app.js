@@ -198,7 +198,14 @@
   // ол болмаса — INN (мысалы 'Paracetamol'). Фото жоқ болса, шартты сурет көрсетіледі.
   const PHOTOS = {
     Paracetamol: 'paracetamol.jpg',
-    'Sodium chloride': 'sodium-chloride.jpg'
+    'Sodium chloride': 'sodium-chloride.jpg',
+    Ibuprofen: 'ibuprofen.jpg',
+    Amoxicillin: 'amoxicillin.jpg',
+    Cetirizine: 'cetirizine.jpg',
+    Loratadine: 'loratadine.jpg',
+    Omeprazole: 'omeprazole.jpg',
+    'Ascorbic acid': 'vitamin-c.jpg',
+    Metformin: 'metformin.jpg'
   };
   function productImg(p) {
     const file = PHOTOS[p.id] || PHOTOS[p.inn];
