@@ -194,6 +194,18 @@
       <text x="16" y="224" font-size="14" fill="${c}" font-family="Inter, sans-serif" font-weight="600">${esc(L(p.dose))} · ${esc(L(p.pack))}</text></svg>`;
   }
 
+  // Нақты фотолар public/img/products/ папкасында. Кілт — тауардың id-і (мысалы 'p-1'),
+  // ол болмаса — INN (мысалы 'Paracetamol'). Фото жоқ болса, шартты сурет көрсетіледі.
+  const PHOTOS = {
+    Paracetamol: 'paracetamol.jpg',
+    'Sodium chloride': 'sodium-chloride.jpg'
+  };
+  function productImg(p) {
+    const file = PHOTOS[p.id] || PHOTOS[p.inn];
+    if (!file) return productSvg(p);
+    return `<img class="pphoto" src="/img/products/${esc(file)}" alt="${esc(L(p.name))} ${esc(L(p.dose))} · ${esc(L(p.pack))}" loading="lazy">`;
+  }
+
   const licenseBadge = (status) => `<span class="badge badge-${esc(status)}">${t('lic.status.' + status)}</span>`;
   const rxChip = (p) => `<span class="chip ${p.rx ? 'chip-rx' : 'chip-otc'}">${p.rx ? t('p.rx') : t('p.otc')}</span>`;
   const demoTag = () => `<span class="demo-tag">${t('demo.tag')}</span>`;
@@ -437,7 +449,7 @@
 
   function productCard(p) {
     return `<article class="card">
-      <a class="card-img" href="#/product/${p.id}" tabindex="-1" aria-hidden="true">${productSvg(p)}</a>
+      <a class="card-img" href="#/product/${p.id}" tabindex="-1" aria-hidden="true">${productImg(p)}</a>
       <div class="card-body">
         <div>${rxChip(p)}</div>
         <a class="card-title" href="#/product/${p.id}">${esc(L(p.name))} ${esc(L(p.dose))}</a>
@@ -486,7 +498,7 @@
     const html = `
       <a class="back-link" href="#/">${t('p.back')}</a>
       <div class="product">
-        <div class="product-img">${productSvg(p)}</div>
+        <div class="product-img">${productImg(p)}</div>
         <div>
           <div class="btn-row" style="margin-bottom:8px">${rxChip(p)} ${licenseBadge(lic.status)}</div>
           <h1>${esc(L(p.name))} ${esc(L(p.dose))}, ${esc(L(p.pack))}</h1>
@@ -610,7 +622,7 @@
             ${groups.map((g) => `<div class="cart-group">
               <div class="cart-group-head"><span>${esc(L(g.pharmacy.name))}</span>${licenseBadge(g.license)}</div>
               ${g.items.map(({ p, qty, sum }) => `<div class="cart-item">
-                <a class="thumb" href="#/product/${p.id}" aria-hidden="true" tabindex="-1">${productSvg(p)}</a>
+                <a class="thumb" href="#/product/${p.id}" aria-hidden="true" tabindex="-1">${productImg(p)}</a>
                 <div>
                   <a class="card-title" href="#/product/${p.id}">${esc(L(p.name))} ${esc(L(p.dose))}</a> ${p.rx ? rxChip(p) : ''}
                   <div class="card-meta">${esc(L(p.pack))} · ${money(p.price)}</div>
