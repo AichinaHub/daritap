@@ -175,24 +175,48 @@
     logout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg>'
   };
 
-  // Ойдан жасалған фото емес — тек санат түсіндегі шартты сурет.
+  // Ойдан жасалған фото емес — атауы, дозасы және қаптамасы жазылған шартты қорап/құты суреті.
+  function wrapWords(text, max) {
+    const lines = [];
+    let cur = '';
+    for (const w of String(text).split(/\s+/)) {
+      if (cur && (cur + ' ' + w).length > max) { lines.push(cur); cur = w; } else cur = cur ? cur + ' ' + w : w;
+    }
+    if (cur) lines.push(cur);
+    if (lines.length > 3) { lines.length = 3; lines[2] = lines[2].replace(/\s*\S*$/, '') + '…'; }
+    return lines;
+  }
   function productSvg(p) {
     const c = CAT_COLORS[p.category] || '#0e9f5b';
-    let shape;
-    if (p.image === 'capsule') {
-      shape = `<g transform="rotate(-28 160 112)"><rect x="92" y="88" width="136" height="50" rx="25" fill="#fff" stroke="${c}" stroke-width="4"/><path d="M160 88h43a25 25 0 0 1 0 50h-43z" fill="${c}"/></g>
-        <g transform="rotate(18 222 160)"><rect x="196" y="148" width="64" height="24" rx="12" fill="#fff" stroke="${c}" stroke-width="3" opacity=".9"/></g>`;
-    } else if (p.image === 'bottle') {
-      shape = `<rect x="140" y="40" width="40" height="22" rx="4" fill="${c}"/><rect x="146" y="60" width="28" height="12" fill="${c}" opacity=".5"/>
-        <rect x="116" y="70" width="88" height="128" rx="18" fill="#fff" stroke="${c}" stroke-width="4"/><rect x="118" y="112" width="84" height="44" fill="${c}" opacity=".16"/>
-        <path d="M152 126h16M160 118v16" stroke="${c}" stroke-width="4" stroke-linecap="round"/>`;
+    const name = L(p.name);
+    const liquid = p.image === 'bottle';
+    const max = liquid ? 11 : 16;
+    const lines = wrapWords(name.toUpperCase(), max);
+    const base = lines.length === 1 ? (liquid ? 17 : 22) : lines.length === 2 ? (liquid ? 15 : 18) : (liquid ? 13 : 15);
+    const longest = Math.max(...lines.map((l) => l.length));
+    const fs = Math.max(9, Math.min(base, Math.floor((liquid ? 112 : 160) / (longest * 0.7))));
+    const text = (x, y0, anchor) => lines.map((l, i) => `<text x="${x}" y="${y0 + i * (fs + 3)}" font-size="${fs}" font-weight="800" fill="#163a2b" text-anchor="${anchor}" font-family="Inter, Arial, sans-serif">${esc(l)}</text>`).join('');
+    let art;
+    if (liquid) {
+      art = `<rect x="128" y="22" width="64" height="26" rx="5" fill="${c}"/><rect x="138" y="46" width="44" height="14" fill="${c}" opacity=".55"/>
+        <rect x="96" y="58" width="128" height="160" rx="22" fill="#fff" stroke="${c}" stroke-width="3"/>
+        <rect x="98" y="92" width="124" height="96" fill="${c}" opacity=".12"/><rect x="98" y="92" width="124" height="8" fill="${c}"/>
+        ${text(160, 122, 'middle')}
+        <text x="160" y="180" font-size="13" font-weight="700" fill="${c}" text-anchor="middle" font-family="Inter, Arial, sans-serif">${esc(L(p.dose))}</text>`;
     } else {
-      shape = `<circle cx="138" cy="112" r="44" fill="#fff" stroke="${c}" stroke-width="4"/><line x1="108" y1="112" x2="168" y2="112" stroke="${c}" stroke-width="4" stroke-linecap="round"/>
-        <circle cx="204" cy="140" r="30" fill="${c}" opacity=".85"/><line x1="186" y1="140" x2="222" y2="140" stroke="#fff" stroke-width="3" stroke-linecap="round"/>`;
+      const pill = p.image === 'capsule'
+        ? `<g transform="translate(232 150) rotate(-30)"><rect x="-22" y="-9" width="44" height="18" rx="9" fill="#fff" stroke="${c}" stroke-width="2"/><path d="M0 -9h13a9 9 0 0 1 0 18h-13z" fill="${c}"/></g>`
+        : `<circle cx="232" cy="150" r="15" fill="#fff" stroke="${c}" stroke-width="2"/><line x1="221" y1="150" x2="243" y2="150" stroke="${c}" stroke-width="2"/>`;
+      art = `<path d="M40 70 L62 48 H292 L270 70 Z" fill="${c}" opacity=".55"/><path d="M270 70 L292 48 V170 L270 192 Z" fill="${c}" opacity=".8"/>
+        <rect x="40" y="70" width="230" height="122" fill="#fff" stroke="${c}" stroke-width="2"/>
+        <rect x="40" y="70" width="230" height="14" fill="${c}"/><rect x="40" y="176" width="230" height="16" fill="${c}" opacity=".85"/>
+        ${text(54, 84 + 14 + fs, 'start')}
+        <text x="54" y="166" font-size="14" font-weight="700" fill="${c}" font-family="Inter, Arial, sans-serif">${esc(L(p.dose))}</text>
+        ${pill}`;
     }
-    return `<svg viewBox="0 0 320 240" role="img" aria-label="${esc(L(p.name))}" xmlns="http://www.w3.org/2000/svg">
-      <rect width="320" height="240" fill="${c}" fill-opacity=".08"/>${shape}
-      <text x="16" y="224" font-size="14" fill="${c}" font-family="Inter, sans-serif" font-weight="600">${esc(L(p.dose))} · ${esc(L(p.pack))}</text></svg>`;
+    return `<svg viewBox="0 0 320 240" role="img" aria-label="${esc(name)}" xmlns="http://www.w3.org/2000/svg">
+      <rect width="320" height="240" fill="${c}" fill-opacity=".08"/>${art}
+      <text x="16" y="232" font-size="13" fill="${c}" font-family="Inter, sans-serif" font-weight="600">${esc(L(p.pack))}</text></svg>`;
   }
 
   // Нақты фотолар public/img/products/ папкасында. Кілт — тауардың id-і (мысалы 'p-1').
