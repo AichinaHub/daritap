@@ -39,9 +39,21 @@ const tablet = { kk: 'Таблетка', en: 'Tablets' };
 const capsule = { kk: 'Капсула', en: 'Capsules' };
 const solution = { kk: 'Ерітінді', en: 'Solution' };
 
+function demoApproved(id, pharmacyId, sellerId, licenseNumber, orgName) {
+  const at = '2026-10-01T09:00:00.000Z';
+  return {
+    id, pharmacyId, orgName, bin: '000000000000', licenseNumber,
+    issuer: 'ДЕМО — мемлекеттік тізілімде жоқ', issueDate: '2026-01-01', expiryDate: null,
+    comment: 'Демо лицензия', file: null,
+    submittedBy: sellerId, submittedAt: at, status: 'approved',
+    reviewedAt: at, reviewerId: 'u-reviewer', reviewerName: 'Демо тексеруші', decision: 'approved', rejectReason: null,
+    history: [{ action: 'submitted', at, by: 'Демо' }, { action: 'approved', at, by: 'Демо тексеруші' }]
+  };
+}
+
 function createSeed() {
   return {
-    version: 1,
+    version: 2,
     users: [
       user('u-customer', 'customer', 'customer', 'Демо сатып алушы'),
       user('u-seller1', 'seller1', 'seller', 'Демо сатушы (А)', 'ph-a'),
@@ -71,7 +83,10 @@ function createSeed() {
         ]
       }
     ],
-    applications: [],
+    // Сатып алуды көрсету үшін екі демо дәріханаға ДЕМО лицензия мақұлданған күйде беріледі.
+    // Бұл нақты лицензия емес: нөмірі мен беруші органы әдейі «ДЕМО» деп белгіленген.
+    applications: [demoApproved('app-demo-a', 'ph-a', 'u-seller1', 'ДЕМО-А-0001', 'Демо дәріхана А (демо ұйым)'),
+      demoApproved('app-demo-b', 'ph-b', 'u-seller2', 'ДЕМО-Б-0002', 'Демо дәріхана Б (демо ұйым)')],
     orders: [],
     orderSeq: 0,
     products: [

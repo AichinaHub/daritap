@@ -31,7 +31,10 @@ function resetDb() {
 function loadDb() {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
   if (!fs.existsSync(DB_FILE)) return resetDb();
-  return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+  const saved = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+  // Ескі нұсқадағы деректер — жаңа демо деректермен ауыстырылады.
+  if ((saved.version || 1) < createSeed().version) return resetDb();
+  return saved;
 }
 
 if (process.argv.includes('--reset-only')) {
