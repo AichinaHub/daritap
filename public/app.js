@@ -9,10 +9,11 @@
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* сақтау мүмкін емес */ } }
   };
 
-  const CATEGORIES = ['pain', 'antibiotic', 'allergy', 'digestive', 'vitamins', 'endocrine', 'solutions'];
+  const CATEGORIES = ['pain', 'antibiotic', 'allergy', 'digestive', 'vitamins', 'endocrine', 'solutions', 'cold', 'cardio', 'skin'];
   const CAT_COLORS = {
     pain: '#0e9f5b', antibiotic: '#2f6fd6', allergy: '#8a5cd6', digestive: '#e07b39',
-    vitamins: '#c99400', endocrine: '#d94f70', solutions: '#1b9fb3'
+    vitamins: '#c99400', endocrine: '#d94f70', solutions: '#1b9fb3',
+    cold: '#3a8fd0', cardio: '#c0392b', skin: '#5b7d3a'
   };
   const FILE_EXT = ['pdf', 'jpg', 'jpeg', 'png'];
   const FILE_MIME = ['application/pdf', 'image/jpeg', 'image/png'];
@@ -194,21 +195,17 @@
       <text x="16" y="224" font-size="14" fill="${c}" font-family="Inter, sans-serif" font-weight="600">${esc(L(p.dose))} · ${esc(L(p.pack))}</text></svg>`;
   }
 
-  // Нақты фотолар public/img/products/ папкасында. Кілт — тауардың id-і (мысалы 'p-1'),
-  // ол болмаса — INN (мысалы 'Paracetamol'). Фото жоқ болса, шартты сурет көрсетіледі.
+  // Нақты фотолар public/img/products/ папкасында. Кілт — тауардың id-і (мысалы 'p-1').
+  // Фото жоқ болса, шартты сурет көрсетіледі.
   const PHOTOS = {
-    Paracetamol: 'paracetamol.jpg',
-    'Sodium chloride': 'sodium-chloride.jpg',
-    Ibuprofen: 'ibuprofen.jpg',
-    Amoxicillin: 'amoxicillin.jpg',
-    Cetirizine: 'cetirizine.jpg',
-    Loratadine: 'loratadine.jpg',
-    Omeprazole: 'omeprazole.jpg',
-    'Ascorbic acid': 'vitamin-c.jpg',
-    Metformin: 'metformin.jpg'
+    'p-1': 'paracetamol.jpg', 'p-2': 'paracetamol.jpg',
+    'p-3': 'ibuprofen.jpg', 'p-4': 'ibuprofen.jpg',
+    'p-5': 'amoxicillin.jpg', 'p-6': 'amoxicillin.jpg',
+    'p-7': 'cetirizine.jpg', 'p-8': 'loratadine.jpg', 'p-9': 'omeprazole.jpg',
+    'p-10': 'vitamin-c.jpg', 'p-11': 'metformin.jpg', 'p-12': 'sodium-chloride.jpg'
   };
   function productImg(p) {
-    const file = PHOTOS[p.id] || PHOTOS[p.inn];
+    const file = PHOTOS[p.id];
     if (!file) return productSvg(p);
     return `<img class="pphoto" src="/img/products/${esc(file)}" alt="${esc(L(p.name))} ${esc(L(p.dose))} · ${esc(L(p.pack))}" loading="lazy">`;
   }

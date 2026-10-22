@@ -39,6 +39,9 @@ window.I18N = {
     'cat.vitamins': 'Дәрумендер',
     'cat.endocrine': 'Эндокринология',
     'cat.solutions': 'Ерітінділер',
+    'cat.cold': 'Суық тию және жөтел',
+    'cat.cardio': 'Жүрек және қан тамырлары',
+    'cat.skin': 'Тері және антисептиктер',
 
     'p.dose': 'Дозасы',
     'p.pack': 'Қаптамасы',
@@ -345,6 +348,9 @@ window.I18N = {
     'cat.vitamins': 'Vitamins',
     'cat.endocrine': 'Endocrinology',
     'cat.solutions': 'Solutions',
+    'cat.cold': 'Cold & cough',
+    'cat.cardio': 'Heart & blood vessels',
+    'cat.skin': 'Skin & antiseptics',
 
     'p.dose': 'Strength',
     'p.pack': 'Pack',
