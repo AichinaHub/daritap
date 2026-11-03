@@ -327,4 +327,6 @@ table.list tr:last-child td { border-bottom: 0; }
   .kpis, .kpis-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .bar-row { grid-template-columns: 110px 1fr 60px; }
   .alt-item { flex-wrap: wrap; }
+  .alt-buy { width: 100%; display: flex; align-items: center; justify-content: space-between; text-align: left; }
+  .alt-buy .price-sm { margin: 0; }
 }

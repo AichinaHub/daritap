@@ -223,9 +223,9 @@
   // Фото жоқ болса, шартты сурет көрсетіледі.
   const PHOTOS = {
     'p-1': 'paracetamol.jpg', 'p-2': 'paracetamol.jpg',
-    'p-3': 'ibuprofen.jpg', 'p-4': 'ibuprofen.jpg',
+    'p-4': 'ibuprofen.jpg', 'p-63': 'ibuprofen.jpg', 'p-67': 'ibuprofen.jpg',
     'p-5': 'amoxicillin.jpg', 'p-6': 'amoxicillin.jpg',
-    'p-7': 'cetirizine.jpg', 'p-8': 'loratadine.jpg', 'p-9': 'omeprazole.jpg',
+    'p-7': 'cetirizine.jpg', 'p-8': 'loratadine.jpg', 'p-72': 'loratadine.jpg', 'p-9': 'omeprazole.jpg',
     'p-10': 'vitamin-c.jpg', 'p-11': 'metformin.jpg', 'p-12': 'sodium-chloride.jpg'
   };
   function productImg(p) {
