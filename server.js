@@ -6,7 +6,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { createSeed } = require('./seed');
+const { createSeed, demoPdf, DEMO_DOC } = require('./seed');
 
 const PORT = Number(process.env.PORT) || 3000;
 const ROOT = __dirname;
@@ -24,6 +24,10 @@ function resetDb() {
   fs.rmSync(DATA_DIR, { recursive: true, force: true });
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
   const seed = createSeed();
+  const pdf = demoPdf();
+  fs.writeFileSync(path.join(UPLOAD_DIR, DEMO_DOC.storedName), pdf);
+  seed.applications.forEach((a) => { if (a.file && a.file.storedName === DEMO_DOC.storedName) a.file.size = pdf.length; });
+  seed.auditLog = [];
   fs.writeFileSync(DB_FILE, JSON.stringify(seed, null, 2));
   return seed;
 }
@@ -50,6 +54,21 @@ function saveDb() {
   fs.writeFileSync(tmp, JSON.stringify(db, null, 2));
   fs.renameSync(tmp, DB_FILE);
 }
+
+// ---------- Аудит журналы ----------
+// Кім, қашан, не істегенін жазады (IP мекенжай мен құпиясөз жазылмайды). Соңғы 500 жазба сақталады.
+function audit(action, user, detail = '') {
+  if (!db.auditLog) db.auditLog = [];
+  db.auditLog.push({ at: new Date().toISOString(), action, user: user ? user.username : 'guest', role: user ? user.role : 'guest', detail: String(detail).slice(0, 200) });
+  if (db.auditLog.length > 500) db.auditLog.splice(0, db.auditLog.length - 500);
+  saveDb();
+}
+
+// ---------- Кіру әрекеттерін шектеу ----------
+// 5 қате құпиясөзден кейін аккаунт 30 секундқа бұғатталады (дұрыс құпиясөз де қабылданбайды).
+const LOCK_AFTER = 5;
+const LOCK_MS = 30 * 1000;
+const loginFails = new Map(); // username -> { count, lockedUntil }
 
 function loadConfig() {
   try {
@@ -104,6 +123,8 @@ function sendJson(res, status, obj, headers = {}) {
     'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'no-store',
     'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'no-referrer',
     ...headers
   });
   res.end(body);
@@ -386,13 +407,100 @@ function createOrders(user, body) {
       status: null,
       history: []
     };
-    list.forEach(({ p, qty }) => { p.stock -= qty; });
+    list.forEach(({ p, qty }) => { p.stock -= qty; p.orders7d += 1; });
     pushHistory(o, rxRequired ? 'rx_pending' : 'accepted', 'system');
     db.orders.push(o);
     created.push(o);
   }
   saveDb();
+  created.forEach((o) => audit('ORDER_CREATED', user, `${o.number} · ${o.items.length} item(s) · ${o.total} ₸`));
   return created.map((o) => orderView(o));
+}
+
+// ---------- Ақылды модуль: үш IF–THEN ереже (машиналық оқыту жоқ) ----------
+const sameMedicine = (a, b) => a.inn === b.inn && a.form.en === b.form.en && a.dose.en === b.dose.en && a.pack.en === b.pack.en;
+
+// 1-ереже · Ақылды баламалар: тауарды сатып алу мүмкін болмаса (лицензия расталмаған немесе қоймада жоқ),
+// дәл сол дәрі, доза және қаптама бар, лицензиясы расталған әрі қоймасында бар дәріханаларды арзанынан бастап ұсынады.
+// Дәрі мен доза ешқашан өзгермейді — тек дәріхана ауысады.
+function alternativesFor(p) {
+  if (!purchaseBlock(p)) return [];
+  return db.products
+    .filter((x) => x.id !== p.id && sameMedicine(x, p) && !purchaseBlock(x))
+    .sort((a, b) => a.price - b.price || b.stock - a.stock)
+    .slice(0, 3);
+}
+
+// 2-ереже · Қойма ескертулері: күнге орташа тапсырыс = orders7d ÷ 7; қалған күндер = stock ÷ күндік тапсырыс.
+// stock = 0 және searches7d ≥ 10 → «Қоймада жоқ»; stock > 0 және қалған күн < 7 → «Аз қалды».
+// Ұсынылатын тапсырыс көлемі 14 күнге жетеді: ceil(күндік × 14 − stock).
+const RESTOCK_DAYS = 7;
+const OUT_MIN_SEARCHES = 10;
+const COVER_DAYS = 14;
+function restockAlert(p) {
+  const daily = p.orders7d / 7;
+  const daysLeft = daily > 0 ? p.stock / daily : null;
+  let type = null;
+  if (p.stock === 0 && p.searches7d >= OUT_MIN_SEARCHES) type = 'out';
+  else if (p.stock > 0 && daysLeft !== null && daysLeft < RESTOCK_DAYS) type = 'low';
+  if (!type) return null;
+  return { type, daysLeft: daysLeft === null ? null : Math.round(daysLeft * 10) / 10, reorder: Math.max(1, Math.ceil(daily * COVER_DAYS - p.stock)) };
+}
+
+// 3-ереже · Тексеру басымдығы: тексерілмеген дәріхананың тауарлары бойынша аптадағы іздеулер = бұғатталған сұраныс.
+// ≥ 100 іздеу → «Жоғары» басымдық; кезек бұғатталған сұраныс бойынша сұрыпталады.
+const HIGH_PRIORITY_SEARCHES = 100;
+function blockedDemand(pharmacyId) {
+  if (licenseStatus(pharmacyId) === 'approved') return 0;
+  return db.products.filter((p) => p.pharmacyId === pharmacyId).reduce((s, p) => s + p.searches7d, 0);
+}
+
+function evaluateRules() {
+  const blocked = db.products.filter((p) => purchaseBlock(p));
+  const rule1 = blocked.map((p) => ({ id: p.id, reason: purchaseBlock(p), alternatives: alternativesFor(p).map((x) => x.id) }));
+  const rule2 = db.products.map((p) => ({ p, a: licenseStatus(p.pharmacyId) === 'approved' ? restockAlert(p) : null })).filter((x) => x.a);
+  const rule3 = db.applications.filter((a) => a.status === 'pending').map((a) => ({ id: a.id, demand: blockedDemand(a.pharmacyId) }));
+  return { rule1, rule2, rule3 };
+}
+
+function insights() {
+  const t0 = process.hrtime.bigint();
+  const RUNS = 1000;
+  let r;
+  for (let i = 0; i < RUNS; i++) r = evaluateRules();
+  const ruleMs = Number(process.hrtime.bigint() - t0) / 1e6 / RUNS;
+  const searches = db.products.reduce((s, p) => s + p.searches7d, 0);
+  const orders = db.products.reduce((s, p) => s + p.orders7d, 0);
+  const lost = db.products.filter((p) => purchaseBlock(p)).reduce((s, p) => s + p.searches7d, 0);
+  const cats = {};
+  db.products.forEach((p) => {
+    cats[p.category] = cats[p.category] || { category: p.category, listings: 0, searches: 0, orders: 0 };
+    cats[p.category].listings += 1;
+    cats[p.category].searches += p.searches7d;
+    cats[p.category].orders += p.orders7d;
+  });
+  const pct = (a, b) => (b ? Math.round((a / b) * 1000) / 10 : 0);
+  return {
+    simulated: true,
+    listings: db.products.length,
+    pharmacies: db.pharmacies.length,
+    verifiedPharmacies: db.pharmacies.filter((ph) => licenseStatus(ph.id) === 'approved').length,
+    searches7d: searches,
+    orders7d: orders,
+    conversionPct: pct(orders, searches),
+    lostSearches: lost,
+    lostPct: pct(lost, searches),
+    categories: Object.values(cats).sort((a, b) => b.searches - a.searches),
+    rules: {
+      rule1Blocked: r.rule1.length,
+      rule1WithAlternative: r.rule1.filter((x) => x.alternatives.length).length,
+      rule2Out: r.rule2.filter((x) => x.a.type === 'out').length,
+      rule2Low: r.rule2.filter((x) => x.a.type === 'low').length,
+      rule3Pending: r.rule3.length,
+      rule3High: r.rule3.filter((x) => x.demand >= HIGH_PRIORITY_SEARCHES).length,
+      evalMs: Math.round(ruleMs * 10000) / 10000
+    }
+  };
 }
 
 // ---------- Маршруттар ----------
@@ -403,22 +511,38 @@ route('GET', /^\/api\/me$/, ({ user }) => ({ user: publicUser(user) }));
 
 route('POST', /^\/api\/login$/, async ({ req, res }) => {
   const body = await readJson(req);
-  const u = db.users.find((x) => x.username === str(body.username, 60));
+  const username = str(body.username, 60);
+  const key = username.toLowerCase();
+  const f = loginFails.get(key);
+  if (f && f.lockedUntil > Date.now()) {
+    audit('LOGIN_LOCKED', null, username);
+    throw new HttpError(429, 'locked', { seconds: Math.ceil((f.lockedUntil - Date.now()) / 1000) });
+  }
+  const u = db.users.find((x) => x.username === username);
   const pass = typeof body.password === 'string' ? body.password : '';
   let ok = false;
   if (u) {
     const hash = crypto.scryptSync(pass, u.salt, 64);
     ok = crypto.timingSafeEqual(hash, Buffer.from(u.passwordHash, 'hex'));
   }
-  if (!ok) throw new HttpError(401, 'bad_credentials');
+  if (!ok) {
+    const n = (f && f.lockedUntil <= Date.now() && f.count >= LOCK_AFTER ? 0 : f ? f.count : 0) + 1;
+    loginFails.set(key, { count: n, lockedUntil: n >= LOCK_AFTER ? Date.now() + LOCK_MS : 0 });
+    audit('LOGIN_FAILED', null, `${username} (${n}/${LOCK_AFTER})`);
+    throw new HttpError(401, 'bad_credentials');
+  }
+  loginFails.delete(key);
   const token = crypto.randomBytes(32).toString('hex');
   sessions.set(token, { userId: u.id, expires: Date.now() + SESSION_TTL_MS });
-  res.setHeader('Set-Cookie', `dt_sid=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_TTL_MS / 1000}`);
+  const secure = req.headers['x-forwarded-proto'] === 'https' ? '; Secure' : '';
+  res.setHeader('Set-Cookie', `dt_sid=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_TTL_MS / 1000}${secure}`);
+  audit('LOGIN_OK', u);
   return { user: publicUser(u) };
 });
 
-route('POST', /^\/api\/logout$/, ({ req, res }) => {
+route('POST', /^\/api\/logout$/, ({ req, res, user }) => {
   const token = parseCookies(req).dt_sid;
+  if (user) audit('LOGOUT', user);
   if (token) sessions.delete(token);
   res.setHeader('Set-Cookie', 'dt_sid=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');
   return { ok: true };
@@ -450,7 +574,11 @@ route('GET', /^\/api\/catalog$/, ({ url }) => {
 route('GET', /^\/api\/products\/([\w-]+)$/, ({ params }) => {
   const p = db.products.find((x) => x.id === params[0]);
   if (!p) throw new HttpError(404, 'not_found');
-  return { product: publicProduct(p, true) };
+  const alts = alternativesFor(p);
+  return {
+    product: publicProduct(p, true),
+    smart: { rule1: { fired: !!purchaseBlock(p), reason: purchaseBlock(p), alternatives: alts.map((x) => ({ ...publicProduct(x), priceDiff: x.price - p.price })) } }
+  };
 });
 
 // Бірнеше тауарды бір сұраумен алу (себет үшін)
@@ -517,6 +645,7 @@ route('POST', /^\/api\/seller\/application$/, async ({ req, user }) => {
   a.history.push({ action: existing ? 'resubmitted' : 'submitted', at: now, by: user.name });
   if (!existing) db.applications.push(a);
   saveDb();
+  audit('LICENSE_SUBMITTED', user, a.orgName);
   return { application: sellerApplicationView(a) };
 });
 
@@ -556,9 +685,11 @@ route('PUT', /^\/api\/seller\/products\/([\w-]+)$/, async ({ req, user, params }
   if (!Number.isInteger(price) || price < 1 || price > 10000000) f.price = 'price';
   if (!Number.isInteger(stock) || stock < 0 || stock > 100000) f.stock = 'stock';
   if (Object.keys(f).length) throw new HttpError(400, 'validation', f);
+  const before = p.stock;
   p.price = price;
   p.stock = stock;
   saveDb();
+  audit('STOCK_UPDATE', user, `${p.id}: ${before} → ${stock}`);
   return { product: sellerProductView(p) };
 });
 
@@ -589,6 +720,18 @@ route('GET', /^\/api\/seller\/products\/([\w-]+)\/regdoc\/file$/, ({ user, param
   requireRole(user, 'seller');
   const p = ownProduct(user, params[0]);
   sendStoredFile(res, p.regDoc && p.regDoc.file);
+});
+
+route('GET', /^\/api\/seller\/alerts$/, ({ user }) => {
+  requireRole(user, 'seller');
+  const verified = licenseStatus(user.pharmacyId) === 'approved';
+  const alerts = verified
+    ? db.products.filter((p) => p.pharmacyId === user.pharmacyId)
+      .map((p) => ({ product: sellerProductView(p), searches7d: p.searches7d, orders7d: p.orders7d, alert: restockAlert(p) }))
+      .filter((x) => x.alert)
+      .sort((a, b) => (a.alert.type === b.alert.type ? (a.alert.daysLeft ?? 0) - (b.alert.daysLeft ?? 0) : a.alert.type === 'out' ? -1 : 1))
+    : [];
+  return { verified, rule: { lowDays: RESTOCK_DAYS, outMinSearches: OUT_MIN_SEARCHES, coverDays: COVER_DAYS }, alerts };
 });
 
 route('GET', /^\/api\/seller\/orders$/, ({ user }) => {
@@ -632,6 +775,7 @@ route('POST', /^\/api\/seller\/orders\/([\w-]+)\/status$/, async ({ req, user, p
   if (body.status === 'cancelled') restoreStock(o);
   pushHistory(o, body.status, user.name);
   saveDb();
+  audit('ORDER_STATUS', user, `${o.number} → ${body.status}`);
   return { order: orderView(o, true) };
 });
 
@@ -674,6 +818,8 @@ function reviewerAppView(a, full = false) {
     reviewerName: a.reviewerName,
     decision: a.decision
   };
+  base.blockedDemand = blockedDemand(a.pharmacyId);
+  base.priority = a.status === 'pending' ? (base.blockedDemand >= HIGH_PRIORITY_SEARCHES ? 'high' : 'normal') : null;
   if (!full) return base;
   return {
     ...base,
@@ -692,8 +838,25 @@ function reviewerAppView(a, full = false) {
 
 route('GET', /^\/api\/reviewer\/applications$/, ({ user }) => {
   requireRole(user, 'reviewer');
-  const list = [...db.applications].sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
-  return { applications: list.map((a) => reviewerAppView(a)) };
+  // Күтудегі өтінімдер алдымен, бұғатталған сұраныс көп болғаны жоғары (3-ереже).
+  const list = [...db.applications].sort((a, b) => {
+    const pa = a.status === 'pending' ? 1 : 0;
+    const pb = b.status === 'pending' ? 1 : 0;
+    if (pa !== pb) return pb - pa;
+    if (pa) return blockedDemand(b.pharmacyId) - blockedDemand(a.pharmacyId);
+    return b.submittedAt.localeCompare(a.submittedAt);
+  });
+  return { applications: list.map((a) => reviewerAppView(a)), rule: { highPrioritySearches: HIGH_PRIORITY_SEARCHES } };
+});
+
+route('GET', /^\/api\/reviewer\/insights$/, ({ user }) => {
+  requireRole(user, 'reviewer');
+  return { insights: insights() };
+});
+
+route('GET', /^\/api\/reviewer\/audit$/, ({ user }) => {
+  requireRole(user, 'reviewer');
+  return { entries: (db.auditLog || []).slice(-100).reverse() };
 });
 
 function findApp(id) {
@@ -735,6 +898,7 @@ route('POST', /^\/api\/reviewer\/applications\/([\w-]+)\/decision$/, async ({ re
   a.reviewerName = user.name;
   a.history.push({ action: a.status, at: now, by: user.name, reason: a.rejectReason || undefined });
   saveDb();
+  audit(a.status === 'approved' ? 'LICENSE_APPROVED' : 'LICENSE_REJECTED', user, a.orgName);
   return { application: reviewerAppView(a, true) };
 });
 
@@ -750,7 +914,7 @@ function serveStatic(req, res, pathname) {
     res.end('Not found');
     return;
   }
-  res.writeHead(200, { 'Content-Type': MIME[path.extname(full)] || 'application/octet-stream', 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-cache' });
+  res.writeHead(200, { 'Content-Type': MIME[path.extname(full)] || 'application/octet-stream', 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY', 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-cache' });
   fs.createReadStream(full).pipe(res);
 }
 
@@ -765,6 +929,8 @@ const server = http.createServer(async (req, res) => {
     if (result !== undefined && !res.headersSent) sendJson(res, 200, result);
   } catch (e) {
     if (e instanceof HttpError) {
+      if (e.status === 401 && e.code === 'auth_required') audit('ACCESS_DENIED', null, `${req.method} ${url.pathname} (401)`);
+      if (e.status === 403) audit('ACCESS_DENIED', currentUser(req), `${req.method} ${url.pathname} (403)`);
       if (!res.headersSent) sendJson(res, e.status, { error: e.code, fields: e.fields || null });
     } else {
       console.error(e);
@@ -775,5 +941,5 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`DariTap (демо) іске қосылды: http://localhost:${PORT}`);
-  console.log('Демо аккаунттар (құпиясөз: demo123): customer, seller1, seller2, reviewer');
+  console.log('Демо аккаунттар (құпиясөз: demo123): customer, seller1, seller2, seller3, reviewer');
 });

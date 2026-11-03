@@ -333,9 +333,11 @@
     [/^\/login$/, viewLogin],
     [/^\/account$/, viewAccount],
     [/^\/seller$/, () => go('/seller/license')],
-    [/^\/seller\/(license|products|orders)$/, viewSeller],
+    [/^\/seller\/(license|products|orders|alerts)$/, viewSeller],
     [/^\/seller\/product\/([\w-]+)$/, viewSellerProduct],
     [/^\/reviewer$/, viewReviewer],
+    [/^\/reviewer\/insights$/, viewInsights],
+    [/^\/reviewer\/audit$/, viewAudit],
     [/^\/reviewer\/app\/([\w-]+)$/, viewReviewerApp]
   ];
 
@@ -494,7 +496,7 @@
 
   // ---------- Дәрінің жеке беті ----------
   async function viewProduct(ctx) {
-    const { product: p } = await api('GET', '/api/products/' + ctx.params[0]);
+    const { product: p, smart } = await api('GET', '/api/products/' + ctx.params[0]);
     const np = `<span class="muted">${t('p.notProvided')}</span>`;
     const lic = p.license;
     let licBody;
@@ -544,6 +546,7 @@
             ${stockLine(p)}
             ${p.blockReason ? `<div class="alert alert-${p.blockReason === 'out_of_stock' ? 'gray' : 'warn'}" style="margin:12px 0 0">${t('block.' + p.blockReason)}</div>` : addControls(p, true)}
           </div>
+          ${smart && smart.rule1.fired ? smartAlternatives(p, smart.rule1.alternatives) : ''}
         </div>
       </div>
 
@@ -580,6 +583,26 @@
       </div>`;
     if (!ctx.mount(html)) return;
     document.title = `${L(p.name)} ${L(p.dose)} — DariTap`;
+  }
+
+  // 1-ереже · Ақылды баламалар (серверде есептеледі).
+  function smartAlternatives(p, alts) {
+    const diff = (d) => (d === 0 ? t('alt.samePrice') : d < 0 ? t('alt.cheaper', { n: money(-d) }) : t('alt.dearer', { n: money(d) }));
+    return `<section class="smart-box" id="smartAlternatives" aria-labelledby="altTitle">
+      <div class="smart-head"><span class="smart-tag">${t('smart.tag')} · ${t('alt.rule')}</span>
+        <h2 id="altTitle">${alts.length ? t('alt.title') : t('alt.noneTitle')}</h2>
+        <p class="small muted">${t('alt.explain')}</p></div>
+      ${alts.length ? `<ul class="alt-list">${alts.map((a, i) => `<li class="alt-item" data-alt="${a.id}">
+          <div class="alt-main">
+            <a class="card-title" href="#/product/${a.id}">${esc(L(a.pharmacy.name))}</a>${i === 0 ? ` <span class="chip chip-otc">${t('alt.best')}</span>` : ''}
+            <div class="small muted">${esc(L(a.name))} ${esc(L(a.dose))} · ${esc(L(a.pack))} · ${licenseBadge(a.license.status)}</div>
+            <div class="small">${t('p.inStock', { n: a.stock })} · ${diff(a.priceDiff)}</div>
+          </div>
+          <div class="alt-buy"><div class="price-sm">${money(a.price)}</div>
+            <button class="btn btn-sm" type="button" data-add="${a.id}" data-max="${a.stock}">${t('p.add')}</button></div>
+        </li>`).join('')}</ul>` : `<p class="small" style="margin:0">${t('alt.none')}</p>`}
+      ${p.rx ? `<p class="small muted" style="margin:10px 0 0">${t('alt.rxNote')}</p>` : ''}
+    </section>`;
   }
 
   // Себетке қосу және сан батырмалары (бүкіл бетке ортақ).
@@ -828,7 +851,7 @@
   // ---------- Кіру / кабинет ----------
   function viewLogin(ctx) {
     const next = ctx.query.get('next');
-    const demo = [['customer', 'role.customer'], ['seller1', 'role.seller'], ['seller2', 'role.seller'], ['reviewer', 'role.reviewer']];
+    const demo = [['customer', 'role.customer'], ['seller1', 'role.seller'], ['seller2', 'role.seller'], ['seller3', 'role.seller'], ['reviewer', 'role.reviewer']];
     const html = `<div class="login-box">
       <div class="panel">
         <h1>${t('login.title')}</h1>
@@ -860,7 +883,7 @@
         go(next && next !== '/login' ? next : home);
       } catch (e) {
         setBusy(btn, false);
-        formAlert(form, esc(errText(e)));
+        formAlert(form, esc(e.code === 'locked' ? t('err.locked', { n: (e.fields && e.fields.seconds) || 30 }) : errText(e)));
       }
     };
     form.addEventListener('submit', (e) => {
@@ -892,7 +915,7 @@
 
   // ---------- Сатушы кабинеті ----------
   function sellerHead(tab) {
-    const tabs = ['license', 'products', 'orders'];
+    const tabs = ['license', 'products', 'orders', 'alerts'];
     return `<div class="page-head">
         <div><h1 style="margin:0">${t('seller.title')}</h1><div class="muted">${esc(L(state.user.pharmacyName))} · ${esc(state.user.name)}</div></div>
       </div>
@@ -905,7 +928,39 @@
     const tab = ctx.params[0];
     if (tab === 'license') return sellerLicense(ctx);
     if (tab === 'products') return sellerProducts(ctx);
+    if (tab === 'alerts') return sellerAlerts(ctx);
     return sellerOrders(ctx);
+  }
+
+  // 2-ереже · Қойма ескертулері.
+  async function sellerAlerts(ctx) {
+    const { verified, rule, alerts } = await api('GET', '/api/seller/alerts');
+    const out = alerts.filter((a) => a.alert.type === 'out').length;
+    const low = alerts.length - out;
+    const body = !verified
+      ? `<div class="alert alert-warn">${t('sa.notVerified')}</div>`
+      : alerts.length
+        ? `<div class="kpis kpis-3">
+            <div class="kpi"><b>${alerts.length}</b><span>${t('sa.total')}</span></div>
+            <div class="kpi kpi-red"><b>${out}</b><span>${t('sa.out')}</span></div>
+            <div class="kpi kpi-amber"><b>${low}</b><span>${t('sa.low')}</span></div>
+          </div>
+          <div class="table-wrap"><table class="list" id="alertsTable">
+          <thead><tr><th>${t('sa.product')}</th><th>${t('sa.alert')}</th><th class="num">${t('sa.stock')}</th><th class="num">${t('sa.orders')}</th><th class="num">${t('sa.searches')}</th><th class="num">${t('sa.days')}</th><th class="num">${t('sa.reorder')}</th><th></th></tr></thead>
+          <tbody>${alerts.map((a) => `<tr data-alert="${a.product.id}" data-type="${a.alert.type}">
+            <td><b>${esc(L(a.product.name))} ${esc(L(a.product.dose))}</b><div class="small muted">${esc(L(a.product.pack))}</div></td>
+            <td><span class="pill pill-${a.alert.type}">${t('sa.type.' + a.alert.type)}</span></td>
+            <td class="num">${a.product.stock}</td><td class="num">${a.orders7d}</td><td class="num">${a.searches7d}</td>
+            <td class="num">${a.alert.daysLeft === null ? '—' : a.alert.daysLeft}</td>
+            <td class="num"><b>+${a.alert.reorder}</b></td>
+            <td><a class="btn btn-outline btn-sm" href="#/seller/product/${a.product.id}">${t('sa.restock')}</a></td>
+          </tr>`).join('')}</tbody></table></div>`
+        : `<div class="empty">${t('sa.none')}</div>`;
+    ctx.mount(`${sellerHead('alerts')}
+      <div class="smart-head" style="margin-bottom:12px"><span class="smart-tag">${t('smart.tag')} · ${t('sa.rule')}</span>
+      <p class="small muted" style="margin:6px 0 0">${t('sa.explain', { days: rule.lowDays, s: rule.outMinSearches, cover: rule.coverDays })}</p></div>
+      ${body}
+      <p class="small muted">${t('sa.simulated')}</p>`);
   }
 
   function historyList(h) {
@@ -1172,10 +1227,7 @@
     const { applications } = await api('GET', '/api/reviewer/applications');
     const list = filter ? applications.filter((a) => a.status === filter) : applications;
     const opts = ['', 'pending', 'approved', 'rejected'];
-    const html = `<div class="page-head">
-        <div><h1 style="margin:0">${t('rv.title')}</h1><div class="muted">${esc(state.user.name)}</div></div>
-      </div>
-      ${takeFlash()}
+    const html = `${reviewerHead('apps')}
       <div class="alert alert-gray small">${t('rv.private')}</div>
       <div class="page-head">
         <h2 style="margin:0">${t('rv.list')}</h2>
@@ -1184,17 +1236,65 @@
         </select>
       </div>
       ${list.length ? `<div class="table-wrap"><table class="list">
-        <thead><tr><th>${t('rv.applicant')}</th><th>${t('rv.pharmacy')}</th><th>${t('seller.submittedAt')}</th><th>${t('common.status')}</th><th>${t('rv.decidedAt')}</th><th></th></tr></thead>
-        <tbody>${list.map((a) => `<tr>
+        <thead><tr><th>${t('rv.applicant')}</th><th>${t('rv.pharmacy')}</th><th>${t('seller.submittedAt')}</th><th>${t('common.status')}</th><th>${t('rv.priority')}</th><th>${t('rv.decidedAt')}</th><th></th></tr></thead>
+        <tbody>${list.map((a) => `<tr data-app="${a.id}" data-priority="${a.priority || ''}">
           <td><b>${esc(a.orgName)}</b></td>
           <td>${a.pharmacy ? esc(L(a.pharmacy.name)) : '—'}</td>
           <td>${fmtDate(a.submittedAt, true)}</td>
           <td>${licenseBadge(a.status)}</td>
+          <td>${a.priority ? `<span class="pill pill-${a.priority === 'high' ? 'out' : 'low'}">${t('rv.priority.' + a.priority)}</span><div class="small muted">${t('rv.blocked', { n: a.blockedDemand })}</div>` : '—'}</td>
           <td>${a.reviewedAt ? `${fmtDate(a.reviewedAt, true)}<div class="small muted">${esc(a.reviewerName)}</div>` : '—'}</td>
           <td><a class="btn btn-outline btn-sm" href="#/reviewer/app/${a.id}">${t('rv.open')}</a></td>
         </tr>`).join('')}</tbody></table></div>` : `<div class="empty">${t('rv.empty')}</div>`}`;
     if (!ctx.mount(html)) return;
     $('#rvFilter').addEventListener('change', (e) => go('/reviewer' + (e.target.value ? '?status=' + e.target.value : '')));
+  }
+
+  function reviewerHead(tab) {
+    const tabs = [['apps', '/reviewer'], ['insights', '/reviewer/insights'], ['audit', '/reviewer/audit']];
+    return `<div class="page-head">
+        <div><h1 style="margin:0">${t('rv.title')}</h1><div class="muted">${esc(state.user.name)}</div></div>
+      </div>
+      <nav class="tabs">${tabs.map(([k, h]) => `<a href="#${h}" class="${tab === k ? 'active' : ''}">${t('rv.tab.' + k)}</a>`).join('')}</nav>
+      ${takeFlash()}`;
+  }
+
+  // Аналитика: KPI + санаттар + ережелердің қорытындысы.
+  async function viewInsights(ctx) {
+    if (!guard(ctx, 'reviewer')) return;
+    const { insights: d } = await api('GET', '/api/reviewer/insights');
+    const max = Math.max(...d.categories.map((c) => c.searches), 1);
+    ctx.mount(`${reviewerHead('insights')}
+      <div class="kpis" id="kpis">
+        <div class="kpi"><b data-kpi="conversion">${d.conversionPct}%</b><span>${t('in.conversion', { o: d.orders7d, s: d.searches7d })}</span></div>
+        <div class="kpi kpi-red"><b data-kpi="lost">${d.lostPct}%</b><span>${t('in.lost', { n: d.lostSearches })}</span></div>
+        <div class="kpi"><b data-kpi="listings">${d.listings}</b><span>${t('in.listings', { v: d.verifiedPharmacies, p: d.pharmacies })}</span></div>
+        <div class="kpi kpi-amber"><b data-kpi="restock">${d.rules.rule2Out + d.rules.rule2Low}</b><span>${t('in.restock', { o: d.rules.rule2Out, l: d.rules.rule2Low })}</span></div>
+      </div>
+      <div class="doc-sections">
+        <div class="panel" style="margin:0"><h3>${t('in.byCategory')}</h3>
+          <div class="bars">${d.categories.map((c) => `<div class="bar-row"><span class="bar-label">${t('cat.' + c.category)}</span>
+            <span class="bar-track"><span class="bar-fill" style="width:${(c.searches / max) * 100}%"></span><span class="bar-fill bar-fill-dark" style="width:${(c.orders / max) * 100}%"></span></span>
+            <span class="bar-val">${c.searches} / ${c.orders}</span></div>`).join('')}</div>
+          <p class="small muted">${t('in.barsLegend')}</p></div>
+        <div class="panel" style="margin:0"><h3>${t('in.rules')}</h3>
+          <table class="spec" id="ruleSummary">
+            <tr><th>${t('alt.rule')}</th><td data-rule="1">${t('in.r1', { b: d.rules.rule1Blocked, a: d.rules.rule1WithAlternative })}</td></tr>
+            <tr><th>${t('sa.rule')}</th><td data-rule="2">${t('in.r2', { o: d.rules.rule2Out, l: d.rules.rule2Low })}</td></tr>
+            <tr><th>${t('rv.rule')}</th><td data-rule="3">${t('in.r3', { p: d.rules.rule3Pending, h: d.rules.rule3High })}</td></tr>
+            <tr><th>${t('in.speed')}</th><td data-rule="ms">${d.rules.evalMs} ms</td></tr>
+          </table></div>
+      </div>
+      <p class="small muted">${t('sa.simulated')}</p>`);
+  }
+
+  async function viewAudit(ctx) {
+    if (!guard(ctx, 'reviewer')) return;
+    const { entries } = await api('GET', '/api/reviewer/audit');
+    ctx.mount(`${reviewerHead('audit')}
+      <p class="small muted">${t('au.note')}</p>
+      ${entries.length ? `<div class="table-wrap"><table class="list" id="auditTable"><thead><tr><th>${t('au.time')}</th><th>${t('au.action')}</th><th>${t('au.user')}</th><th>${t('au.detail')}</th></tr></thead>
+      <tbody>${entries.map((e) => `<tr data-action="${esc(e.action)}"><td>${fmtDate(e.at, true)}</td><td><code>${esc(e.action)}</code></td><td>${esc(e.user)} <span class="small muted">(${esc(e.role)})</span></td><td class="small">${esc(e.detail)}</td></tr>`).join('')}</tbody></table></div>` : `<div class="empty">—</div>`}`);
   }
 
   async function viewReviewerApp(ctx) {

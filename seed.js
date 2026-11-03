@@ -31,7 +31,9 @@ function product(id, pharmacyId, o) {
     image: o.image,
     manufacturer: null, // дерек жоқ — ойдан толтырылмайды
     instruction: null, // ресми нұсқаулық енгізілмеген
-    regDoc: null // дәрінің мемлекеттік тіркеу құжаты — сатушы бөлек жүктейді
+    regDoc: null, // дәрінің мемлекеттік тіркеу құжаты — сатушы бөлек жүктейді
+    searches7d: (ACTIVITY_7D[id] || [0, 0])[0],
+    orders7d: (ACTIVITY_7D[id] || [0, 0])[1]
   };
 }
 
@@ -51,13 +53,69 @@ function demoApproved(id, pharmacyId, sellerId, licenseNumber, orgName) {
   };
 }
 
+// Тексерушіге көрсетілетін демо құжат (resetDb кезінде data/uploads ішіне жазылады).
+const DEMO_DOC = { storedName: 'demo-license-c.pdf', originalName: 'demo-license-pharmacy-C.pdf', mime: 'application/pdf' };
+
+function demoPending(id, pharmacyId, sellerId, licenseNumber, orgName) {
+  const at = '2026-10-28T10:30:00.000Z';
+  return {
+    id, pharmacyId, orgName, bin: '000000000003', licenseNumber,
+    issuer: 'ДЕМО — мемлекеттік тізілімде жоқ', issueDate: '2026-02-01', expiryDate: null,
+    comment: 'Демо өтінім: тексеруші мақұлдауы немесе қабылдамауы мүмкін.',
+    file: { ...DEMO_DOC, size: 0, uploadedAt: at },
+    submittedBy: sellerId, submittedAt: at, status: 'pending',
+    reviewedAt: null, reviewerId: null, reviewerName: null, decision: null, rejectReason: null,
+    history: [{ action: 'submitted', at, by: 'Демо сатушы (В)' }]
+  };
+}
+
+// Минималды жарамды PDF: «демо құжат, нақты лицензия емес».
+function demoPdf() {
+  const text = 'DEMO licence document - Demo Pharmacy C - not a real licence';
+  const objs = [
+    '<< /Type /Catalog /Pages 2 0 R >>',
+    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>',
+    null,
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'
+  ];
+  const stream = `BT /F1 16 Tf 60 760 Td (${text}) Tj ET`;
+  objs[3] = `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`;
+  let out = '%PDF-1.4\n';
+  const offs = [];
+  objs.forEach((o, i) => { offs.push(out.length); out += `${i + 1} 0 obj\n${o}\nendobj\n`; });
+  const xref = out.length;
+  out += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n` + offs.map((n) => String(n).padStart(10, '0') + ' 00000 n \n').join('');
+  out += `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+  return Buffer.from(out, 'latin1');
+}
+
+// Соңғы 7 күндегі белсенділік: [іздеулер, тапсырыстар]. СИМУЛЯЦИЯЛАНҒАН демо деректер (нақты сату емес).
+// Тексерілуде тұрған В дәріханасының тауарларын сатып алу мүмкін емес, сондықтан тапсырыстары 0.
+const ACTIVITY_7D = {
+  'p-1': [58, 10], 'p-2': [68, 14], 'p-3': [40, 7], 'p-4': [64, 7], 'p-5': [15, 1], 'p-6': [12, 1],
+  'p-7': [31, 5], 'p-8': [23, 4], 'p-9': [18, 4], 'p-10': [16, 2], 'p-11': [7, 1], 'p-12': [9, 2],
+  'p-13': [55, 12], 'p-14': [32, 5], 'p-15': [37, 6], 'p-16': [45, 10], 'p-17': [33, 2], 'p-18': [26, 4],
+  'p-19': [34, 4], 'p-20': [72, 13], 'p-21': [78, 17], 'p-22': [49, 4], 'p-23': [21, 5], 'p-24': [25, 6],
+  'p-25': [44, 4], 'p-26': [34, 5], 'p-27': [48, 10], 'p-28': [45, 10], 'p-29': [37, 7], 'p-30': [29, 7],
+  'p-31': [35, 4], 'p-32': [33, 8], 'p-33': [25, 4], 'p-34': [14, 1], 'p-35': [26, 6], 'p-36': [14, 2],
+  'p-37': [19, 4], 'p-38': [16, 4], 'p-39': [25, 4], 'p-40': [26, 1], 'p-41': [25, 4], 'p-42': [16, 3],
+  'p-43': [9, 2], 'p-44': [20, 2], 'p-45': [19, 3], 'p-46': [21, 3], 'p-47': [15, 1], 'p-48': [9, 1],
+  'p-49': [19, 2], 'p-50': [16, 1], 'p-51': [10, 1], 'p-52': [16, 2], 'p-53': [9, 1], 'p-54': [13, 2],
+  'p-55': [8, 1], 'p-56': [16, 2], 'p-57': [10, 1], 'p-58': [11, 1], 'p-59': [7, 1], 'p-60': [8, 1],
+  'p-61': [13, 2], 'p-62': [6, 1], 'p-63': [49, 12], 'p-64': [12, 1], 'p-65': [54, 10], 'p-66': [47, 0],
+  'p-67': [43, 0], 'p-68': [23, 0], 'p-69': [31, 0], 'p-70': [27, 0], 'p-71': [13, 0], 'p-72': [26, 0]
+};
+
+
 function createSeed() {
   return {
-    version: 3,
+    version: 4,
     users: [
       user('u-customer', 'customer', 'customer', 'Демо сатып алушы'),
       user('u-seller1', 'seller1', 'seller', 'Демо сатушы (А)', 'ph-a'),
       user('u-seller2', 'seller2', 'seller', 'Демо сатушы (Б)', 'ph-b'),
+      user('u-seller3', 'seller3', 'seller', 'Демо сатушы (В)', 'ph-c'),
       user('u-reviewer', 'reviewer', 'reviewer', 'Демо тексеруші')
     ],
     pharmacies: [
@@ -81,12 +139,24 @@ function createSeed() {
         branches: [
           { id: 'br-b1', name: { kk: 'Б — №1 алып кету нүктесі (демо)', en: 'B — pickup point #1 (demo)' } }
         ]
+      },
+      {
+        id: 'ph-c',
+        name: { kk: 'Демо дәріхана В', en: 'Demo Pharmacy C' },
+        city: { kk: 'Астана', en: 'Astana' },
+        address: { kk: 'Демо мекенжай, 3', en: 'Demo address, 3' },
+        phone: null,
+        branches: [
+          { id: 'br-c1', name: { kk: 'В — №1 алып кету нүктесі (демо)', en: 'C — pickup point #1 (demo)' } }
+        ]
       }
     ],
     // Сатып алуды көрсету үшін екі демо дәріханаға ДЕМО лицензия мақұлданған күйде беріледі.
     // Бұл нақты лицензия емес: нөмірі мен беруші органы әдейі «ДЕМО» деп белгіленген.
     applications: [demoApproved('app-demo-a', 'ph-a', 'u-seller1', 'ДЕМО-А-0001', 'Демо дәріхана А (демо ұйым)'),
-      demoApproved('app-demo-b', 'ph-b', 'u-seller2', 'ДЕМО-Б-0002', 'Демо дәріхана Б (демо ұйым)')],
+      demoApproved('app-demo-b', 'ph-b', 'u-seller2', 'ДЕМО-Б-0002', 'Демо дәріхана Б (демо ұйым)'),
+      // Үшінші дәріхана — өтінімі тексерілуде: лицензия ағынын, 1-ереже мен 3-ережені көрсету үшін.
+      demoPending('app-demo-c', 'ph-c', 'u-seller3', 'ДЕМО-В-0003', 'Демо дәріхана В (демо ұйым)')],
     orders: [],
     orderSeq: 0,
     products: [
@@ -200,9 +270,20 @@ function createSeed() {
       product('p-59', 'ph-a', {"name": {"kk": "Хлоргексидин", "en": "Chlorhexidine"}, "inn": "Chlorhexidine", "category": "skin", "form": {"kk": "Ерітінді", "en": "Solution"}, "dose": {"kk": "0,05%", "en": "0.05%"}, "pack": {"kk": "100 мл құты", "en": "100 ml bottle"}, "price": 230, "stock": 3, "rx": false, "image": "bottle"}),
       product('p-60', 'ph-b', {"name": {"kk": "Сутегі асқын тотығы", "en": "Hydrogen peroxide"}, "inn": "Hydrogen peroxide", "category": "skin", "form": {"kk": "Ерітінді", "en": "Solution"}, "dose": {"kk": "3%", "en": "3%"}, "pack": {"kk": "100 мл құты", "en": "100 ml bottle"}, "price": 150, "stock": 40, "rx": false, "image": "bottle"}),
       product('p-61', 'ph-a', {"name": {"kk": "Декспантенол", "en": "Dexpanthenol"}, "inn": "Dexpanthenol", "category": "skin", "form": {"kk": "Крем", "en": "Cream"}, "dose": {"kk": "5%", "en": "5%"}, "pack": {"kk": "30 г түтік", "en": "30 g tube"}, "price": 1350, "stock": 40, "rx": false, "image": "bottle"}),
-      product('p-62', 'ph-b', {"name": {"kk": "Клотримазол", "en": "Clotrimazole"}, "inn": "Clotrimazole", "category": "skin", "form": {"kk": "Крем", "en": "Cream"}, "dose": {"kk": "1%", "en": "1%"}, "pack": {"kk": "20 г түтік", "en": "20 g tube"}, "price": 470, "stock": 50, "rx": false, "image": "bottle"})
+      product('p-62', 'ph-b', {"name": {"kk": "Клотримазол", "en": "Clotrimazole"}, "inn": "Clotrimazole", "category": "skin", "form": {"kk": "Крем", "en": "Cream"}, "dose": {"kk": "1%", "en": "1%"}, "pack": {"kk": "20 г түтік", "en": "20 g tube"}, "price": 470, "stock": 50, "rx": false, "image": "bottle"}),
+      // Endterm: 1-ереже үшін бір дәрінің бірнеше дәріханадағы нұсқалары.
+      product('p-63', 'ph-a', { name: { kk: 'Ибупрофен', en: 'Ibuprofen' }, inn: 'Ibuprofen', category: 'pain', form: tablet, dose: { kk: '400 мг', en: '400 mg' }, pack: { kk: '20 таблетка', en: '20 tablets' }, price: 1010, stock: 14, rx: false, image: 'tablet' }),
+      product('p-64', 'ph-a', { name: { kk: 'Метформин', en: 'Metformin' }, inn: 'Metformin', category: 'endocrine', form: tablet, dose: { kk: '500 мг', en: '500 mg' }, pack: { kk: '60 таблетка', en: '60 tablets' }, price: 1520, stock: 10, rx: true, image: 'tablet' }),
+      product('p-65', 'ph-a', { name: { kk: 'Ксилометазолин', en: 'Xylometazoline' }, inn: 'Xylometazoline', category: 'cold', form: { kk: 'Мұрын спрейі', en: 'Nasal spray' }, dose: { kk: '0,1%', en: '0.1%' }, pack: { kk: '10 мл құты', en: '10 ml bottle' }, price: 690, stock: 12, rx: false, image: 'bottle' }),
+      product('p-66', 'ph-c', { name: { kk: 'Парацетамол', en: 'Paracetamol' }, inn: 'Paracetamol', category: 'pain', form: tablet, dose: { kk: '500 мг', en: '500 mg' }, pack: { kk: '20 таблетка', en: '20 tablets' }, price: 560, stock: 40, rx: false, image: 'tablet' }),
+      product('p-67', 'ph-c', { name: { kk: 'Ибупрофен', en: 'Ibuprofen' }, inn: 'Ibuprofen', category: 'pain', form: tablet, dose: { kk: '400 мг', en: '400 mg' }, pack: { kk: '20 таблетка', en: '20 tablets' }, price: 930, stock: 25, rx: false, image: 'tablet' }),
+      product('p-68', 'ph-c', { name: { kk: 'Цетиризин', en: 'Cetirizine' }, inn: 'Cetirizine', category: 'allergy', form: tablet, dose: { kk: '10 мг', en: '10 mg' }, pack: { kk: '10 таблетка', en: '10 tablets' }, price: 820, stock: 30, rx: false, image: 'tablet' }),
+      product('p-69', 'ph-c', { name: { kk: 'Ксилометазолин', en: 'Xylometazoline' }, inn: 'Xylometazoline', category: 'cold', form: { kk: 'Мұрын спрейі', en: 'Nasal spray' }, dose: { kk: '0,1%', en: '0.1%' }, pack: { kk: '10 мл құты', en: '10 ml bottle' }, price: 610, stock: 20, rx: false, image: 'bottle' }),
+      product('p-70', 'ph-c', { name: { kk: 'Смектит диоктаэдрлік', en: 'Diosmectite' }, inn: 'Diosmectite', category: 'digestive', form: { kk: 'Ұнтақ', en: 'Powder' }, dose: { kk: '3 г', en: '3 g' }, pack: { kk: '10 пакет', en: '10 sachets' }, price: 1490, stock: 15, rx: false, image: 'capsule' }),
+      product('p-71', 'ph-c', { name: { kk: 'Амоксициллин', en: 'Amoxicillin' }, inn: 'Amoxicillin', category: 'antibiotic', form: capsule, dose: { kk: '500 мг', en: '500 mg' }, pack: { kk: '16 капсула', en: '16 capsules' }, price: 1590, stock: 10, rx: true, image: 'capsule' }),
+      product('p-72', 'ph-c', { name: { kk: 'Лоратадин', en: 'Loratadine' }, inn: 'Loratadine', category: 'allergy', form: tablet, dose: { kk: '10 мг', en: '10 mg' }, pack: { kk: '10 таблетка', en: '10 tablets' }, price: 650, stock: 18, rx: false, image: 'tablet' })
     ]
   };
 }
 
-module.exports = { createSeed, hashPassword };
+module.exports = { createSeed, hashPassword, demoPdf, DEMO_DOC };
