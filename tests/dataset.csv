@@ -1,0 +1,73 @@
+listing_id,pharmacy,license_status,medicine,dose,pack,category,rx,price_kzt,stock_units,searches_7d,orders_7d
+p-1,Demo Pharmacy A,approved,Paracetamol,500 mg,10 tablets,pain,OTC,350,40,58,10
+p-2,Demo Pharmacy A,approved,Paracetamol,500 mg,20 tablets,pain,OTC,590,25,68,14
+p-3,Demo Pharmacy B,approved,Ibuprofen,200 mg,20 tablets,pain,OTC,720,18,40,7
+p-4,Demo Pharmacy B,approved,Ibuprofen,400 mg,20 tablets,pain,OTC,980,0,64,7
+p-5,Demo Pharmacy A,approved,Amoxicillin,250 mg,16 capsules,antibiotic,Rx,1150,12,15,1
+p-6,Demo Pharmacy B,approved,Amoxicillin,500 mg,16 capsules,antibiotic,Rx,1640,9,12,1
+p-7,Demo Pharmacy A,approved,Cetirizine,10 mg,10 tablets,allergy,OTC,860,30,31,5
+p-8,Demo Pharmacy B,approved,Loratadine,10 mg,10 tablets,allergy,OTC,690,22,23,4
+p-9,Demo Pharmacy A,approved,Omeprazole,20 mg,30 capsules,digestive,OTC,1290,14,18,4
+p-10,Demo Pharmacy B,approved,Ascorbic acid (Vitamin C),50 mg,50 tablets,vitamins,OTC,420,60,16,2
+p-11,Demo Pharmacy B,approved,Metformin,500 mg,60 tablets,endocrine,Rx,1480,0,7,1
+p-12,Demo Pharmacy A,approved,Sodium chloride,0.9%,200 ml bottle,solutions,OTC,540,20,9,2
+p-13,Demo Pharmacy A,approved,Drotaverine,40 mg,20 tablets,pain,OTC,520,4,55,12
+p-14,Demo Pharmacy B,approved,Acetylsalicylic acid,500 mg,10 tablets,pain,OTC,180,5,32,5
+p-15,Demo Pharmacy A,approved,Acetylsalicylic acid + paracetamol + caffeine,240/180/30 mg,10 tablets,pain,OTC,210,20,37,6
+p-16,Demo Pharmacy B,approved,Metamizole sodium,500 mg,10 tablets,pain,OTC,250,50,45,10
+p-17,Demo Pharmacy A,approved,Ketorolac,10 mg,20 tablets,pain,Rx,690,0,33,2
+p-18,Demo Pharmacy B,approved,Diclofenac,1%,40 g tube,pain,OTC,890,3,26,4
+p-19,Demo Pharmacy A,approved,Nimesulide,100 mg,20 tablets,pain,Rx,1150,30,34,4
+p-20,Demo Pharmacy B,approved,Paracetamol (children),120 mg/5 ml,100 ml bottle,pain,OTC,780,3,72,13
+p-21,Demo Pharmacy A,approved,Ibuprofen (children),100 mg/5 ml,100 ml bottle,pain,OTC,1240,15,78,17
+p-22,Demo Pharmacy B,approved,Xylometazoline,0.1%,10 ml bottle,cold,OTC,640,0,49,4
+p-23,Demo Pharmacy A,approved,Oxymetazoline,0.05%,10 ml bottle,cold,OTC,1390,30,21,5
+p-24,Demo Pharmacy B,approved,Ambroxol,30 mg,20 tablets,cold,OTC,410,8,25,6
+p-25,Demo Pharmacy A,approved,Ambroxol (syrup),15 mg/5 ml,100 ml bottle,cold,OTC,720,0,44,4
+p-26,Demo Pharmacy B,approved,Acetylcysteine,200 mg,20 tablets,cold,OTC,1680,3,34,5
+p-27,Demo Pharmacy A,approved,Bromhexine,8 mg,20 tablets,cold,OTC,330,20,48,10
+p-28,Demo Pharmacy B,approved,Umifenovir,100 mg,10 capsules,cold,OTC,1950,20,45,10
+p-29,Demo Pharmacy A,approved,Hexetidine,0.1%,200 ml bottle,cold,OTC,1820,3,37,7
+p-30,Demo Pharmacy B,approved,Desloratadine,5 mg,10 tablets,allergy,OTC,1260,8,29,7
+p-31,Demo Pharmacy A,approved,Levocetirizine,5 mg,10 tablets,allergy,OTC,1430,0,35,4
+p-32,Demo Pharmacy B,approved,Chloropyramine,25 mg,20 tablets,allergy,OTC,980,30,33,8
+p-33,Demo Pharmacy A,approved,Fexofenadine,120 mg,10 tablets,allergy,OTC,2150,20,25,4
+p-34,Demo Pharmacy B,approved,Diosmectite,3 g,10 sachets,digestive,OTC,1560,0,14,1
+p-35,Demo Pharmacy A,approved,Loperamide,2 mg,10 capsules,digestive,OTC,290,40,26,6
+p-36,Demo Pharmacy B,approved,Pancreatin,"10,000 U",20 capsules,digestive,OTC,1870,3,14,2
+p-37,Demo Pharmacy A,approved,Activated charcoal,250 mg,10 tablets,digestive,OTC,90,8,19,4
+p-38,Demo Pharmacy B,approved,Oral rehydration salts,18.9 g,20 sachets,digestive,OTC,2240,50,16,4
+p-39,Demo Pharmacy A,approved,Famotidine,20 mg,20 tablets,digestive,OTC,480,50,25,4
+p-40,Demo Pharmacy B,approved,Metoclopramide,10 mg,50 tablets,digestive,Rx,560,0,26,1
+p-41,Demo Pharmacy A,approved,Bisacodyl,5 mg,30 tablets,digestive,OTC,340,40,25,4
+p-42,Demo Pharmacy B,approved,Colecalciferol (Vitamin D3),"15,000 IU/ml",10 ml bottle,vitamins,OTC,1490,40,16,3
+p-43,Demo Pharmacy A,approved,Folic acid,1 mg,50 tablets,vitamins,OTC,260,20,9,2
+p-44,Demo Pharmacy B,approved,Magnesium lactate + pyridoxine,470/5 mg,50 tablets,vitamins,OTC,1940,0,20,2
+p-45,Demo Pharmacy A,approved,Iron(III) hydroxide polymaltose,100 mg,30 tablets,vitamins,OTC,2860,8,19,3
+p-46,Demo Pharmacy B,approved,Calcium carbonate + colecalciferol,500 mg/200 IU,60 tablets,vitamins,OTC,2390,0,21,3
+p-47,Demo Pharmacy A,approved,Azithromycin,500 mg,3 tablets,antibiotic,Rx,990,30,15,1
+p-48,Demo Pharmacy B,approved,Ciprofloxacin,500 mg,10 tablets,antibiotic,Rx,620,5,9,1
+p-49,Demo Pharmacy A,approved,Amoxicillin + clavulanic acid,875/125 mg,14 tablets,antibiotic,Rx,2780,4,19,2
+p-50,Demo Pharmacy B,approved,Ceftriaxone,1 g,1 vial,antibiotic,Rx,390,20,16,1
+p-51,Demo Pharmacy A,approved,Doxycycline,100 mg,10 capsules,antibiotic,Rx,450,5,10,1
+p-52,Demo Pharmacy B,approved,Amlodipine,5 mg,30 tablets,cardio,Rx,540,30,16,2
+p-53,Demo Pharmacy A,approved,Lisinopril,10 mg,30 tablets,cardio,Rx,610,3,9,1
+p-54,Demo Pharmacy B,approved,Bisoprolol,5 mg,30 tablets,cardio,Rx,790,40,13,2
+p-55,Demo Pharmacy A,approved,Atorvastatin,20 mg,30 tablets,cardio,Rx,1620,12,8,1
+p-56,Demo Pharmacy B,approved,Acetylsalicylic acid (cardio),75 mg,30 tablets,cardio,OTC,690,30,16,2
+p-57,Demo Pharmacy A,approved,Levothyroxine sodium,50 mcg,50 tablets,endocrine,Rx,1180,50,10,1
+p-58,Demo Pharmacy B,approved,Gliclazide,60 mg,30 tablets,endocrine,Rx,1710,0,11,1
+p-59,Demo Pharmacy A,approved,Chlorhexidine,0.05%,100 ml bottle,skin,OTC,230,3,7,1
+p-60,Demo Pharmacy B,approved,Hydrogen peroxide,3%,100 ml bottle,skin,OTC,150,40,8,1
+p-61,Demo Pharmacy A,approved,Dexpanthenol,5%,30 g tube,skin,OTC,1350,40,13,2
+p-62,Demo Pharmacy B,approved,Clotrimazole,1%,20 g tube,skin,OTC,470,50,6,1
+p-63,Demo Pharmacy A,approved,Ibuprofen,400 mg,20 tablets,pain,OTC,1010,14,49,12
+p-64,Demo Pharmacy A,approved,Metformin,500 mg,60 tablets,endocrine,Rx,1520,10,12,1
+p-65,Demo Pharmacy A,approved,Xylometazoline,0.1%,10 ml bottle,cold,OTC,690,12,54,10
+p-66,Demo Pharmacy C,pending,Paracetamol,500 mg,20 tablets,pain,OTC,560,40,47,0
+p-67,Demo Pharmacy C,pending,Ibuprofen,400 mg,20 tablets,pain,OTC,930,25,43,0
+p-68,Demo Pharmacy C,pending,Cetirizine,10 mg,10 tablets,allergy,OTC,820,30,23,0
+p-69,Demo Pharmacy C,pending,Xylometazoline,0.1%,10 ml bottle,cold,OTC,610,20,31,0
+p-70,Demo Pharmacy C,pending,Diosmectite,3 g,10 sachets,digestive,OTC,1490,15,27,0
+p-71,Demo Pharmacy C,pending,Amoxicillin,500 mg,16 capsules,antibiotic,Rx,1590,10,13,0
+p-72,Demo Pharmacy C,pending,Loratadine,10 mg,10 tablets,allergy,OTC,650,18,26,0
