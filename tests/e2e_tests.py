@@ -324,7 +324,7 @@ def run(browser):
         ms = float(page.locator('[data-rule=ms]').inner_text().split()[0])
         ctx.close()
         assert max(overflow) <= 0 and not errs and ms < 100, (overflow, errs, ms)
-        return f'Horizontal overflow {max(overflow)} px on 4 screens; {len(errs)} JS errors; all three rules for 72 listings in {ms} ms (average of 1 000 runs)'
+        return f'Horizontal overflow {max(overflow)} px on 4 screens; {len(errs)} JS errors; all three rules for {len(json.load(open(f"{W}/seed_dump.json"))["products"])} listings in {ms} ms (average of 1 000 runs)'
     record('T15', 'Mobile layout (390×844) and rule-engine speed', 'No horizontal scrolling and no JavaScript errors on a phone screen; evaluating all rules takes well under 100 ms', t15)
 
 if __name__ == '__main__':

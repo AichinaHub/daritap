@@ -9,11 +9,11 @@
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* сақтау мүмкін емес */ } }
   };
 
-  const CATEGORIES = ['pain', 'antibiotic', 'allergy', 'digestive', 'vitamins', 'endocrine', 'solutions', 'cold', 'cardio', 'skin'];
+  const CATEGORIES = ['pain', 'antibiotic', 'allergy', 'digestive', 'vitamins', 'endocrine', 'solutions', 'cold', 'cardio', 'skin', 'eye'];
   const CAT_COLORS = {
     pain: '#0e9f5b', antibiotic: '#2f6fd6', allergy: '#8a5cd6', digestive: '#e07b39',
     vitamins: '#c99400', endocrine: '#d94f70', solutions: '#1b9fb3',
-    cold: '#3a8fd0', cardio: '#c0392b', skin: '#5b7d3a'
+    cold: '#3a8fd0', cardio: '#c0392b', skin: '#5b7d3a', eye: '#0f7c9e'
   };
   const FILE_EXT = ['pdf', 'jpg', 'jpeg', 'png'];
   const FILE_MIME = ['application/pdf', 'image/jpeg', 'image/png'];
@@ -226,7 +226,10 @@
     'p-4': 'ibuprofen.jpg', 'p-63': 'ibuprofen.jpg', 'p-67': 'ibuprofen.jpg',
     'p-5': 'amoxicillin.jpg', 'p-6': 'amoxicillin.jpg',
     'p-7': 'cetirizine.jpg', 'p-8': 'loratadine.jpg', 'p-72': 'loratadine.jpg', 'p-9': 'omeprazole.jpg',
-    'p-10': 'vitamin-c.jpg', 'p-11': 'metformin.jpg', 'p-12': 'sodium-chloride.jpg'
+    'p-10': 'vitamin-c.jpg', 'p-11': 'metformin.jpg', 'p-12': 'sodium-chloride.jpg',
+    'p-13': 'drotaverine.jpg', 'p-15': 'citramon.jpg', 'p-23': 'oxymetazoline.jpg',
+    'p-22': 'xylometazoline-otrivin.jpg', 'p-65': 'xylometazoline-otrivin.jpg', 'p-69': 'xylometazoline-ximelin.jpg',
+    'p-52': 'amlodipine.jpg', 'p-53': 'lisinopril.jpg', 'p-76': 'water-for-injection.jpg', 'p-77': 'sodium-hyaluronate.jpg'
   };
   function productImg(p) {
     const file = PHOTOS[p.id];

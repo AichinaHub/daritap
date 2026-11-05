@@ -110,7 +110,7 @@ const ACTIVITY_7D = {
 
 function createSeed() {
   return {
-    version: 4,
+    version: 6,
     users: [
       user('u-customer', 'customer', 'customer', 'Демо сатып алушы'),
       user('u-seller1', 'seller1', 'seller', 'Демо сатушы (А)', 'ph-a'),
@@ -221,7 +221,7 @@ function createSeed() {
         price: 540, stock: 20, rx: false, image: 'bottle'
       }),
       // Қосымша 50 танымал дәрі: атаулары мен дозалары — жалпы мәлімет; бағасы мен қалдығы — ДЕМО.
-      product('p-13', 'ph-a', {"name": {"kk": "Дротаверин", "en": "Drotaverine"}, "inn": "Drotaverine", "category": "pain", "form": {"kk": "Таблетка", "en": "Tablets"}, "dose": {"kk": "40 мг", "en": "40 mg"}, "pack": {"kk": "20 таблетка", "en": "20 tablets"}, "price": 520, "stock": 4, "rx": false, "image": "tablet"}),
+      product('p-13', 'ph-a', {"name": {"kk": "Дротаверин", "en": "Drotaverine"}, "inn": "Drotaverine", "category": "pain", "form": {"kk": "Таблетка", "en": "Tablets"}, "dose": {"kk": "40 мг", "en": "40 mg"}, "pack": {"kk": "24 таблетка", "en": "24 tablets"}, "price": 520, "stock": 4, "rx": false, "image": "tablet"}),
       product('p-14', 'ph-b', {"name": {"kk": "Ацетилсалицил қышқылы", "en": "Acetylsalicylic acid"}, "inn": "Acetylsalicylic acid", "category": "pain", "form": {"kk": "Таблетка", "en": "Tablets"}, "dose": {"kk": "500 мг", "en": "500 mg"}, "pack": {"kk": "10 таблетка", "en": "10 tablets"}, "price": 180, "stock": 5, "rx": false, "image": "tablet"}),
       product('p-15', 'ph-a', {"name": {"kk": "Ацетилсалицил қышқылы + парацетамол + кофеин", "en": "Acetylsalicylic acid + paracetamol + caffeine"}, "inn": "Acetylsalicylic acid + Paracetamol + Caffeine", "category": "pain", "form": {"kk": "Таблетка", "en": "Tablets"}, "dose": {"kk": "240/180/30 мг", "en": "240/180/30 mg"}, "pack": {"kk": "10 таблетка", "en": "10 tablets"}, "price": 210, "stock": 20, "rx": false, "image": "tablet"}),
       product('p-16', 'ph-b', {"name": {"kk": "Метамизол натрий", "en": "Metamizole sodium"}, "inn": "Metamizole", "category": "pain", "form": {"kk": "Таблетка", "en": "Tablets"}, "dose": {"kk": "500 мг", "en": "500 mg"}, "pack": {"kk": "10 таблетка", "en": "10 tablets"}, "price": 250, "stock": 50, "rx": false, "image": "tablet"}),
@@ -260,7 +260,7 @@ function createSeed() {
       product('p-49', 'ph-a', {"name": {"kk": "Амоксициллин + клавулан қышқылы", "en": "Amoxicillin + clavulanic acid"}, "inn": "Amoxicillin + Clavulanic acid", "category": "antibiotic", "form": {"kk": "Таблетка", "en": "Tablets"}, "dose": {"kk": "875/125 мг", "en": "875/125 mg"}, "pack": {"kk": "14 таблетка", "en": "14 tablets"}, "price": 2780, "stock": 4, "rx": true, "image": "tablet"}),
       product('p-50', 'ph-b', {"name": {"kk": "Цефтриаксон", "en": "Ceftriaxone"}, "inn": "Ceftriaxone", "category": "antibiotic", "form": {"kk": "Инъекцияға арналған ұнтақ", "en": "Powder for injection"}, "dose": {"kk": "1 г", "en": "1 g"}, "pack": {"kk": "1 флакон", "en": "1 vial"}, "price": 390, "stock": 20, "rx": true, "image": "bottle"}),
       product('p-51', 'ph-a', {"name": {"kk": "Доксициклин", "en": "Doxycycline"}, "inn": "Doxycycline", "category": "antibiotic", "form": {"kk": "Капсула", "en": "Capsules"}, "dose": {"kk": "100 мг", "en": "100 mg"}, "pack": {"kk": "10 капсула", "en": "10 capsules"}, "price": 450, "stock": 5, "rx": true, "image": "capsule"}),
-      product('p-52', 'ph-b', {"name": {"kk": "Амлодипин", "en": "Amlodipine"}, "inn": "Amlodipine", "category": "cardio", "form": {"kk": "Таблетка", "en": "Tablets"}, "dose": {"kk": "5 мг", "en": "5 mg"}, "pack": {"kk": "30 таблетка", "en": "30 tablets"}, "price": 540, "stock": 30, "rx": true, "image": "tablet"}),
+      product('p-52', 'ph-b', {"name": {"kk": "Амлодипин", "en": "Amlodipine"}, "inn": "Amlodipine", "category": "cardio", "form": {"kk": "Таблетка", "en": "Tablets"}, "dose": {"kk": "10 мг", "en": "10 mg"}, "pack": {"kk": "30 таблетка", "en": "30 tablets"}, "price": 540, "stock": 30, "rx": true, "image": "tablet"}),
       product('p-53', 'ph-a', {"name": {"kk": "Лизиноприл", "en": "Lisinopril"}, "inn": "Lisinopril", "category": "cardio", "form": {"kk": "Таблетка", "en": "Tablets"}, "dose": {"kk": "10 мг", "en": "10 mg"}, "pack": {"kk": "30 таблетка", "en": "30 tablets"}, "price": 610, "stock": 3, "rx": true, "image": "tablet"}),
       product('p-54', 'ph-b', {"name": {"kk": "Бисопролол", "en": "Bisoprolol"}, "inn": "Bisoprolol", "category": "cardio", "form": {"kk": "Таблетка", "en": "Tablets"}, "dose": {"kk": "5 мг", "en": "5 mg"}, "pack": {"kk": "30 таблетка", "en": "30 tablets"}, "price": 790, "stock": 40, "rx": true, "image": "tablet"}),
       product('p-55', 'ph-a', {"name": {"kk": "Аторвастатин", "en": "Atorvastatin"}, "inn": "Atorvastatin", "category": "cardio", "form": {"kk": "Таблетка", "en": "Tablets"}, "dose": {"kk": "20 мг", "en": "20 mg"}, "pack": {"kk": "30 таблетка", "en": "30 tablets"}, "price": 1620, "stock": 12, "rx": true, "image": "tablet"}),
@@ -281,7 +281,13 @@ function createSeed() {
       product('p-69', 'ph-c', { name: { kk: 'Ксилометазолин', en: 'Xylometazoline' }, inn: 'Xylometazoline', category: 'cold', form: { kk: 'Мұрын спрейі', en: 'Nasal spray' }, dose: { kk: '0,1%', en: '0.1%' }, pack: { kk: '10 мл құты', en: '10 ml bottle' }, price: 610, stock: 20, rx: false, image: 'bottle' }),
       product('p-70', 'ph-c', { name: { kk: 'Смектит диоктаэдрлік', en: 'Diosmectite' }, inn: 'Diosmectite', category: 'digestive', form: { kk: 'Ұнтақ', en: 'Powder' }, dose: { kk: '3 г', en: '3 g' }, pack: { kk: '10 пакет', en: '10 sachets' }, price: 1490, stock: 15, rx: false, image: 'capsule' }),
       product('p-71', 'ph-c', { name: { kk: 'Амоксициллин', en: 'Amoxicillin' }, inn: 'Amoxicillin', category: 'antibiotic', form: capsule, dose: { kk: '500 мг', en: '500 mg' }, pack: { kk: '16 капсула', en: '16 capsules' }, price: 1590, stock: 10, rx: true, image: 'capsule' }),
-      product('p-72', 'ph-c', { name: { kk: 'Лоратадин', en: 'Loratadine' }, inn: 'Loratadine', category: 'allergy', form: tablet, dose: { kk: '10 мг', en: '10 mg' }, pack: { kk: '10 таблетка', en: '10 tablets' }, price: 650, stock: 18, rx: false, image: 'tablet' })
+      product('p-72', 'ph-c', { name: { kk: 'Лоратадин', en: 'Loratadine' }, inn: 'Loratadine', category: 'allergy', form: tablet, dose: { kk: '10 мг', en: '10 mg' }, pack: { kk: '10 таблетка', en: '10 tablets' }, price: 650, stock: 18, rx: false, image: 'tablet' }),
+      // Жаңа қосылған дәрілер (62 әртүрлі дәрі). Апталық белсенділік әлі жоқ: ACTIVITY_7D-де жазба жоқ → 0.
+      product('p-73', 'ph-a', { name: { kk: 'Ацикловир', en: 'Aciclovir' }, inn: 'Aciclovir', category: 'skin', form: { kk: 'Крем', en: 'Cream' }, dose: { kk: '5%', en: '5%' }, pack: { kk: '5 г түтік', en: '5 g tube' }, price: 390, stock: 25, rx: false, image: 'bottle' }),
+      product('p-74', 'ph-b', { name: { kk: 'Пантопразол', en: 'Pantoprazole' }, inn: 'Pantoprazole', category: 'digestive', form: tablet, dose: { kk: '20 мг', en: '20 mg' }, pack: { kk: '14 таблетка', en: '14 tablets' }, price: 1180, stock: 20, rx: false, image: 'tablet' }),
+      product('p-75', 'ph-a', { name: { kk: 'Ментил изовалераты', en: 'Menthyl isovalerate' }, inn: 'Menthyl isovalerate', category: 'cardio', form: { kk: 'Тіл астындағы таблетка', en: 'Sublingual tablets' }, dose: { kk: '60 мг', en: '60 mg' }, pack: { kk: '10 таблетка', en: '10 tablets' }, price: 160, stock: 35, rx: false, image: 'tablet' }),
+      product('p-76', 'ph-b', { name: { kk: 'Инъекцияға арналған су', en: 'Water for injections' }, inn: 'Water for injections', category: 'solutions', form: { kk: 'Еріткіш', en: 'Solvent' }, dose: { kk: '200 мл', en: '200 ml' }, pack: { kk: '1 құты', en: '1 bottle' }, price: 290, stock: 30, rx: false, image: 'bottle' }),
+      product('p-77', 'ph-a', { name: { kk: 'Натрий гиалуронаты', en: 'Sodium hyaluronate' }, inn: 'Sodium hyaluronate', category: 'eye', form: { kk: 'Көз тамшысы', en: 'Eye drops' }, dose: { kk: '0,4%', en: '0.4%' }, pack: { kk: '10 мл құты', en: '10 ml bottle' }, price: 2950, stock: 15, rx: false, image: 'bottle' })
     ]
   };
 }

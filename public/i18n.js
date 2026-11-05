@@ -42,6 +42,7 @@ window.I18N = {
     'cat.cold': 'Суық тию және жөтел',
     'cat.cardio': 'Жүрек және қан тамырлары',
     'cat.skin': 'Тері және антисептиктер',
+    'cat.eye': 'Көз күтімі',
 
     'p.dose': 'Дозасы',
     'p.pack': 'Қаптамасы',
@@ -406,6 +407,7 @@ window.I18N = {
     'cat.cold': 'Cold & cough',
     'cat.cardio': 'Heart & blood vessels',
     'cat.skin': 'Skin & antiseptics',
+    'cat.eye': 'Eye care',
 
     'p.dose': 'Strength',
     'p.pack': 'Pack',
