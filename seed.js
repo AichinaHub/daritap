@@ -110,7 +110,7 @@ const ACTIVITY_7D = {
 
 function createSeed() {
   return {
-    version: 8,
+    version: 9,
     users: [
       user('u-customer', 'customer', 'customer', 'Демо сатып алушы'),
       user('u-seller1', 'seller1', 'seller', 'Демо сатушы (А)', 'ph-a'),
@@ -187,12 +187,12 @@ function createSeed() {
       }),
       product('p-6', 'ph-b', {
         name: { kk: 'Амоксициллин', en: 'Amoxicillin' }, inn: 'Amoxicillin', category: 'antibiotic',
-        form: capsule, dose: { kk: '500 мг', en: '500 mg' }, pack: { kk: '16 капсула', en: '16 capsules' },
+        form: capsule, dose: { kk: '500 мг', en: '500 mg' }, pack: { kk: '10 капсула', en: '10 capsules' },
         price: 1640, stock: 9, rx: true, image: 'capsule'
       }),
       product('p-7', 'ph-a', {
         name: { kk: 'Цетиризин', en: 'Cetirizine' }, inn: 'Cetirizine', category: 'allergy',
-        form: tablet, dose: { kk: '10 мг', en: '10 mg' }, pack: { kk: '10 таблетка', en: '10 tablets' },
+        form: tablet, dose: { kk: '10 мг', en: '10 mg' }, pack: { kk: '30 таблетка', en: '30 tablets' },
         price: 860, stock: 30, rx: false, image: 'tablet'
       }),
       product('p-8', 'ph-b', {
@@ -207,17 +207,17 @@ function createSeed() {
       }),
       product('p-10', 'ph-b', {
         name: { kk: 'Аскорбин қышқылы (С дәрумені)', en: 'Ascorbic acid (Vitamin C)' }, inn: 'Ascorbic acid', category: 'vitamins',
-        form: tablet, dose: { kk: '50 мг', en: '50 mg' }, pack: { kk: '50 таблетка', en: '50 tablets' },
+        form: tablet, dose: { kk: '500 мг', en: '500 mg' }, pack: { kk: '30 таблетка', en: '30 tablets' },
         price: 420, stock: 60, rx: false, image: 'tablet'
       }),
       product('p-11', 'ph-b', {
         name: { kk: 'Метформин', en: 'Metformin' }, inn: 'Metformin', category: 'endocrine',
-        form: tablet, dose: { kk: '500 мг', en: '500 mg' }, pack: { kk: '60 таблетка', en: '60 tablets' },
+        form: tablet, dose: { kk: '850 мг', en: '850 mg' }, pack: { kk: '60 таблетка', en: '60 tablets' },
         price: 1480, stock: 0, rx: true, image: 'tablet'
       }),
       product('p-12', 'ph-a', {
         name: { kk: 'Натрий хлориді', en: 'Sodium chloride' }, inn: 'Sodium chloride', category: 'solutions',
-        form: solution, dose: { kk: '0,9%', en: '0.9%' }, pack: { kk: '200 мл құты', en: '200 ml bottle' },
+        form: { kk: 'Инъекцияға арналған ерітінді', en: 'Solution for injection' }, dose: { kk: '0,9%', en: '0.9%' }, pack: { kk: '10 ампула × 5 мл', en: '10 ampoules × 5 ml' },
         price: 540, stock: 20, rx: false, image: 'bottle'
       }),
       // Қосымша 50 танымал дәрі: атаулары мен дозалары — жалпы мәлімет; бағасы мен қалдығы — ДЕМО.
@@ -273,14 +273,14 @@ function createSeed() {
       product('p-62', 'ph-b', {"name": {"kk": "Клотримазол", "en": "Clotrimazole"}, "inn": "Clotrimazole", "category": "skin", "form": {"kk": "Крем", "en": "Cream"}, "dose": {"kk": "1%", "en": "1%"}, "pack": {"kk": "20 г түтік", "en": "20 g tube"}, "price": 470, "stock": 50, "rx": false, "image": "bottle"}),
       // Endterm: 1-ереже үшін бір дәрінің бірнеше дәріханадағы нұсқалары.
       product('p-63', 'ph-a', { name: { kk: 'Ибупрофен', en: 'Ibuprofen' }, inn: 'Ibuprofen', category: 'pain', form: tablet, dose: { kk: '400 мг', en: '400 mg' }, pack: { kk: '20 таблетка', en: '20 tablets' }, price: 1010, stock: 14, rx: false, image: 'tablet' }),
-      product('p-64', 'ph-a', { name: { kk: 'Метформин', en: 'Metformin' }, inn: 'Metformin', category: 'endocrine', form: tablet, dose: { kk: '500 мг', en: '500 mg' }, pack: { kk: '60 таблетка', en: '60 tablets' }, price: 1520, stock: 10, rx: true, image: 'tablet' }),
+      product('p-64', 'ph-a', { name: { kk: 'Метформин', en: 'Metformin' }, inn: 'Metformin', category: 'endocrine', form: tablet, dose: { kk: '850 мг', en: '850 mg' }, pack: { kk: '60 таблетка', en: '60 tablets' }, price: 1520, stock: 10, rx: true, image: 'tablet' }),
       product('p-65', 'ph-a', { name: { kk: 'Ксилометазолин', en: 'Xylometazoline' }, inn: 'Xylometazoline', category: 'cold', form: { kk: 'Мұрын спрейі', en: 'Nasal spray' }, dose: { kk: '0,1%', en: '0.1%' }, pack: { kk: '10 мл құты', en: '10 ml bottle' }, price: 690, stock: 12, rx: false, image: 'bottle' }),
       product('p-66', 'ph-c', { name: { kk: 'Парацетамол', en: 'Paracetamol' }, inn: 'Paracetamol', category: 'pain', form: tablet, dose: { kk: '500 мг', en: '500 mg' }, pack: { kk: '20 таблетка', en: '20 tablets' }, price: 560, stock: 40, rx: false, image: 'tablet' }),
       product('p-67', 'ph-c', { name: { kk: 'Ибупрофен', en: 'Ibuprofen' }, inn: 'Ibuprofen', category: 'pain', form: tablet, dose: { kk: '400 мг', en: '400 mg' }, pack: { kk: '20 таблетка', en: '20 tablets' }, price: 930, stock: 25, rx: false, image: 'tablet' }),
-      product('p-68', 'ph-c', { name: { kk: 'Цетиризин', en: 'Cetirizine' }, inn: 'Cetirizine', category: 'allergy', form: tablet, dose: { kk: '10 мг', en: '10 mg' }, pack: { kk: '10 таблетка', en: '10 tablets' }, price: 820, stock: 30, rx: false, image: 'tablet' }),
+      product('p-68', 'ph-c', { name: { kk: 'Цетиризин', en: 'Cetirizine' }, inn: 'Cetirizine', category: 'allergy', form: tablet, dose: { kk: '10 мг', en: '10 mg' }, pack: { kk: '30 таблетка', en: '30 tablets' }, price: 820, stock: 30, rx: false, image: 'tablet' }),
       product('p-69', 'ph-c', { name: { kk: 'Ксилометазолин', en: 'Xylometazoline' }, inn: 'Xylometazoline', category: 'cold', form: { kk: 'Мұрын спрейі', en: 'Nasal spray' }, dose: { kk: '0,1%', en: '0.1%' }, pack: { kk: '10 мл құты', en: '10 ml bottle' }, price: 610, stock: 20, rx: false, image: 'bottle' }),
       product('p-70', 'ph-c', { name: { kk: 'Смектит диоктаэдрлік', en: 'Diosmectite' }, inn: 'Diosmectite', category: 'digestive', form: { kk: 'Ұнтақ', en: 'Powder' }, dose: { kk: '3 г', en: '3 g' }, pack: { kk: '10 пакет', en: '10 sachets' }, price: 1490, stock: 15, rx: false, image: 'capsule' }),
-      product('p-71', 'ph-c', { name: { kk: 'Амоксициллин', en: 'Amoxicillin' }, inn: 'Amoxicillin', category: 'antibiotic', form: capsule, dose: { kk: '500 мг', en: '500 mg' }, pack: { kk: '16 капсула', en: '16 capsules' }, price: 1590, stock: 10, rx: true, image: 'capsule' }),
+      product('p-71', 'ph-c', { name: { kk: 'Амоксициллин', en: 'Amoxicillin' }, inn: 'Amoxicillin', category: 'antibiotic', form: capsule, dose: { kk: '500 мг', en: '500 mg' }, pack: { kk: '10 капсула', en: '10 capsules' }, price: 1590, stock: 10, rx: true, image: 'capsule' }),
       product('p-72', 'ph-c', { name: { kk: 'Лоратадин', en: 'Loratadine' }, inn: 'Loratadine', category: 'allergy', form: tablet, dose: { kk: '10 мг', en: '10 mg' }, pack: { kk: '10 таблетка', en: '10 tablets' }, price: 650, stock: 18, rx: false, image: 'tablet' }),
       // Жаңа қосылған дәрілер (62 әртүрлі дәрі). Апталық белсенділік әлі жоқ: ACTIVITY_7D-де жазба жоқ → 0.
       product('p-73', 'ph-a', { name: { kk: 'Ацикловир', en: 'Aciclovir' }, inn: 'Aciclovir', category: 'skin', form: { kk: 'Крем', en: 'Cream' }, dose: { kk: '5%', en: '5%' }, pack: { kk: '5 г түтік', en: '5 g tube' }, price: 390, stock: 25, rx: false, image: 'bottle' }),

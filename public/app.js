@@ -307,11 +307,10 @@
   // Нақты фотолар public/img/products/ папкасында. Кілт — тауардың id-і (мысалы 'p-1').
   // Фото жоқ болса, шартты сурет көрсетіледі.
   const PHOTOS = {
-    'p-1': 'paracetamol.jpg', 'p-2': 'paracetamol.jpg',
     'p-4': 'ibuprofen.jpg', 'p-63': 'ibuprofen.jpg', 'p-67': 'ibuprofen.jpg',
-    'p-5': 'amoxicillin.jpg', 'p-6': 'amoxicillin.jpg',
-    'p-7': 'cetirizine.jpg', 'p-8': 'loratadine.jpg', 'p-72': 'loratadine.jpg', 'p-9': 'omeprazole.jpg',
-    'p-10': 'vitamin-c.jpg', 'p-11': 'metformin.jpg', 'p-12': 'sodium-chloride.jpg',
+    'p-6': 'amoxicillin.jpg', 'p-71': 'amoxicillin.jpg',
+    'p-7': 'cetirizine.jpg', 'p-68': 'cetirizine.jpg', 'p-8': 'loratadine.jpg', 'p-72': 'loratadine.jpg', 'p-9': 'omeprazole.jpg',
+    'p-10': 'vitamin-c.jpg', 'p-11': 'metformin.jpg', 'p-64': 'metformin.jpg', 'p-12': 'sodium-chloride.jpg',
     'p-13': 'drotaverine.jpg', 'p-15': 'citramon.jpg', 'p-23': 'oxymetazoline.jpg',
     'p-22': 'xylometazoline-otrivin.jpg', 'p-65': 'xylometazoline-otrivin.jpg', 'p-69': 'xylometazoline-ximelin.jpg',
     'p-52': 'amlodipine.jpg', 'p-53': 'lisinopril.jpg', 'p-76': 'water-for-injection.jpg', 'p-77': 'sodium-hyaluronate.jpg',
