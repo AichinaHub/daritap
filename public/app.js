@@ -229,7 +229,8 @@
     'p-10': 'vitamin-c.jpg', 'p-11': 'metformin.jpg', 'p-12': 'sodium-chloride.jpg',
     'p-13': 'drotaverine.jpg', 'p-15': 'citramon.jpg', 'p-23': 'oxymetazoline.jpg',
     'p-22': 'xylometazoline-otrivin.jpg', 'p-65': 'xylometazoline-otrivin.jpg', 'p-69': 'xylometazoline-ximelin.jpg',
-    'p-52': 'amlodipine.jpg', 'p-53': 'lisinopril.jpg', 'p-76': 'water-for-injection.jpg', 'p-77': 'sodium-hyaluronate.jpg'
+    'p-52': 'amlodipine.jpg', 'p-53': 'lisinopril.jpg', 'p-76': 'water-for-injection.jpg', 'p-77': 'sodium-hyaluronate.jpg',
+    'p-14': 'aspirin.jpg', 'p-16': 'metamizole.jpg', 'p-17': 'ketorolac.jpg', 'p-18': 'diclofenac-gel.jpg', 'p-19': 'nimesulide.jpg', 'p-20': 'paracetamol-syrup.jpg', 'p-21': 'ibuprofen-syrup.jpg', 'p-24': 'ambroxol.jpg', 'p-26': 'acetylcysteine.jpg', 'p-27': 'bromhexine.jpg'
   };
   function productImg(p) {
     const file = PHOTOS[p.id];
