@@ -12,7 +12,7 @@ plt.rcParams.update({'font.family': 'Inter', 'font.size': 10, 'axes.spines.top':
                      'axes.edgecolor': '#B9C8BF', 'axes.labelcolor': '#33473D', 'xtick.color': '#4F6158', 'ytick.color': '#33473D'})
 INK, GREEN, GREEN_L, DARK, AMBER, RED, GRID = '#0F2A1F', '#0E9F5B', '#9FD8B8', '#0A7A45', '#D99A0B', '#C8372D', '#E3E9E6'
 CAT = {'pain': 'Pain & fever', 'cold': 'Cold & cough', 'allergy': 'Allergy', 'digestive': 'Digestive', 'antibiotic': 'Antibiotics', 'vitamins': 'Vitamins',
-       'cardio': 'Heart & vessels', 'endocrine': 'Endocrinology', 'skin': 'Skin & antiseptics', 'solutions': 'Solutions'}
+       'cardio': 'Heart & vessels', 'endocrine': 'Endocrinology', 'skin': 'Skin & antiseptics', 'solutions': 'Solutions', 'eye': 'Eye care'}
 
 # Fig A: where searches land
 S = A['searches']; buy = S - A['lost']
@@ -46,7 +46,7 @@ fig.tight_layout(); fig.savefig(f'{W}/fig/c_category.png', bbox_inches='tight');
 
 # Fig C: days of stock left (verified, in stock, < 14 days) + empty count
 lic = {a['pharmacyId']: a['status'] for a in d['applications']}
-phn = {p['id']: p['name']['en'][-1] for p in d['pharmacies']}
+phn = {p['id']: p['name']['en'] for p in d['pharmacies']}
 rows = []
 for p in d['products']:
     if lic[p['pharmacyId']] != 'approved' or p['stock'] == 0 or p['orders7d'] == 0: continue
