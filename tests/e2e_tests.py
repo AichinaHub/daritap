@@ -11,6 +11,7 @@ from playwright.sync_api import sync_playwright
 BASE = sys.argv[1]
 W = sys.argv[2]
 EXP = json.load(open(f'{W}/analysis.json'))
+PH_EN = {p['id']: p['name']['en'] for p in json.load(open(f'{W}/seed_dump.json'))['pharmacies']}
 RESULTS = []
 SHOTS = f'{W}/shots'
 
@@ -138,7 +139,7 @@ def run(browser):
         page.screenshot(path=f'{SHOTS}/rule1_license.png', full_page=False)
         ctx.close()
         return f'Purchase blocked (license under review); first option: {ph}, {price.strip()} ({exp["diff"]:+d} ₸)'
-    record('T5', 'Rule 1: listing of a pharmacy whose license is under review (Paracetamol 500 mg ×20, Pharmacy C)', 'Purchase blocked; Smart alternatives shows the same medicine at Demo Pharmacy A, 590 ₸', t5)
+    record('T5', 'Rule 1: listing of a pharmacy whose license is under review (Paracetamol 500 mg ×20, Pharmacy C)', 'Purchase blocked; Smart alternatives shows the same medicine at Pharmacy A, 590 ₸', t5)
 
     # ---------------- T6 ----------------
     def t6():
@@ -187,7 +188,7 @@ def run(browser):
         page.goto(f'{BASE}/#/seller/alerts'); page.locator('#alertsTable').wait_for()
         rows = page.locator('#alertsTable tbody tr').all()
         got = {r.get_attribute('data-alert'): (r.get_attribute('data-type'), r.locator('td').nth(5).inner_text().strip(), r.locator('td').nth(6).inner_text().strip()) for r in rows}
-        exp = {r['id']: (r['type'], '—' if r['type'] == 'out' and r['orders'] == 0 else (str(r['days']) if r['days'] is not None else '—'), f"+{r['reorder']}") for r in EXP['rule2'] if r['pharmacy'] == 'Demo Pharmacy B'}
+        exp = {r['id']: (r['type'], '—' if r['type'] == 'out' and r['orders'] == 0 else (str(r['days']) if r['days'] is not None else '—'), f"+{r['reorder']}") for r in EXP['rule2'] if r['pharmacy'] == PH_EN['ph-b']}
         # out-of-stock rows show 0 days left when orders > 0
         exp = {k: (v[0], '0' if v[0] == 'out' and v[1] == '0.0' else v[1].rstrip('0').rstrip('.') if '.' in v[1] else v[1], v[2]) for k, v in exp.items()}
         page.screenshot(path=f'{SHOTS}/seller_alerts.png', full_page=True)
@@ -233,7 +234,7 @@ def run(browser):
         num = re.search(r'DT-\d{8}-\d{4}', page.locator('#app').inner_text()).group(0)
         page.screenshot(path=f'{SHOTS}/order_success.png')
         ctx.close()
-        return f'Order {num} created at Demo Pharmacy A in {c.n} clicks from the blocked product page (+2 fields, 1 select)'
+        return f'Order {num} created at {PH_EN["ph-a"]} in {c.n} clicks from the blocked product page (+2 fields, 1 select)'
     record('T11', 'Customer buys through a smart alternative', 'From the blocked listing the customer adds the alternative and places a pickup order', t11)
 
     # ---------------- T12 ----------------

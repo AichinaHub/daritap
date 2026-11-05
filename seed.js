@@ -71,7 +71,7 @@ function demoPending(id, pharmacyId, sellerId, licenseNumber, orgName) {
 
 // Минималды жарамды PDF: «демо құжат, нақты лицензия емес».
 function demoPdf() {
-  const text = 'DEMO licence document - Demo Pharmacy C - not a real licence';
+  const text = 'DEMO licence document - Samal Med (demo) - not a real licence';
   const objs = [
     '<< /Type /Catalog /Pages 2 0 R >>',
     '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
@@ -110,7 +110,7 @@ const ACTIVITY_7D = {
 
 function createSeed() {
   return {
-    version: 7,
+    version: 8,
     users: [
       user('u-customer', 'customer', 'customer', 'Демо сатып алушы'),
       user('u-seller1', 'seller1', 'seller', 'Демо сатушы (А)', 'ph-a'),
@@ -121,42 +121,42 @@ function createSeed() {
     pharmacies: [
       {
         id: 'ph-a',
-        name: { kk: 'Демо дәріхана А', en: 'Demo Pharmacy A' },
+        name: { kk: 'Шипа Фарм', en: 'Shipa Pharm' },
         city: { kk: 'Астана', en: 'Astana' },
         address: { kk: 'Демо мекенжай, 1', en: 'Demo address, 1' },
         phone: null,
         branches: [
-          { id: 'br-a1', name: { kk: 'А — №1 алып кету нүктесі (демо)', en: 'A — pickup point #1 (demo)' } },
-          { id: 'br-a2', name: { kk: 'А — №2 алып кету нүктесі (демо)', en: 'A — pickup point #2 (demo)' } }
+          { id: 'br-a1', name: { kk: 'Шипа Фарм — №1 алып кету нүктесі (демо)', en: 'Shipa Pharm — pickup point #1 (demo)' } },
+          { id: 'br-a2', name: { kk: 'Шипа Фарм — №2 алып кету нүктесі (демо)', en: 'Shipa Pharm — pickup point #2 (demo)' } }
         ]
       },
       {
         id: 'ph-b',
-        name: { kk: 'Демо дәріхана Б', en: 'Demo Pharmacy B' },
+        name: { kk: 'Береке Дәрі', en: 'Bereke Dari' },
         city: { kk: 'Алматы', en: 'Almaty' },
         address: { kk: 'Демо мекенжай, 2', en: 'Demo address, 2' },
         phone: null,
         branches: [
-          { id: 'br-b1', name: { kk: 'Б — №1 алып кету нүктесі (демо)', en: 'B — pickup point #1 (demo)' } }
+          { id: 'br-b1', name: { kk: 'Береке Дәрі — №1 алып кету нүктесі (демо)', en: 'Bereke Dari — pickup point #1 (demo)' } }
         ]
       },
       {
         id: 'ph-c',
-        name: { kk: 'Демо дәріхана В', en: 'Demo Pharmacy C' },
+        name: { kk: 'Самал Мед', en: 'Samal Med' },
         city: { kk: 'Астана', en: 'Astana' },
         address: { kk: 'Демо мекенжай, 3', en: 'Demo address, 3' },
         phone: null,
         branches: [
-          { id: 'br-c1', name: { kk: 'В — №1 алып кету нүктесі (демо)', en: 'C — pickup point #1 (demo)' } }
+          { id: 'br-c1', name: { kk: 'Самал Мед — №1 алып кету нүктесі (демо)', en: 'Samal Med — pickup point #1 (demo)' } }
         ]
       }
     ],
     // Сатып алуды көрсету үшін екі демо дәріханаға ДЕМО лицензия мақұлданған күйде беріледі.
     // Бұл нақты лицензия емес: нөмірі мен беруші органы әдейі «ДЕМО» деп белгіленген.
-    applications: [demoApproved('app-demo-a', 'ph-a', 'u-seller1', 'ДЕМО-А-0001', 'Демо дәріхана А (демо ұйым)'),
-      demoApproved('app-demo-b', 'ph-b', 'u-seller2', 'ДЕМО-Б-0002', 'Демо дәріхана Б (демо ұйым)'),
+    applications: [demoApproved('app-demo-a', 'ph-a', 'u-seller1', 'ДЕМО-А-0001', '«Шипа Фарм» ЖШС (демо ұйым)'),
+      demoApproved('app-demo-b', 'ph-b', 'u-seller2', 'ДЕМО-Б-0002', '«Береке Дәрі» ЖШС (демо ұйым)'),
       // Үшінші дәріхана — өтінімі тексерілуде: лицензия ағынын, 1-ереже мен 3-ережені көрсету үшін.
-      demoPending('app-demo-c', 'ph-c', 'u-seller3', 'ДЕМО-В-0003', 'Демо дәріхана В (демо ұйым)')],
+      demoPending('app-demo-c', 'ph-c', 'u-seller3', 'ДЕМО-В-0003', '«Самал Мед» ЖШС (демо ұйым)')],
     orders: [],
     orderSeq: 0,
     products: [

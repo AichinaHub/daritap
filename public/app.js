@@ -176,47 +176,132 @@
   };
 
   // Ойдан жасалған фото емес — атауы, дозасы және қаптамасы жазылған шартты қорап/құты суреті.
-  function wrapWords(text, max) {
-    const lines = [];
-    let cur = '';
-    for (const w of String(text).split(/\s+/)) {
-      if (cur && (cur + ' ' + w).length > max) { lines.push(cur); cur = w; } else cur = cur ? cur + ' ' + w : w;
+  // Фотосы жоқ дәріге арналған қаптама суреті (бренд жоқ: тек атауы, дозасы, қаптамасы).
+  // Сурет дәрінің түріне қарай салынады: қорап+блистер, құты, тамшы құты, спрей, түтік, пакет, флакон.
+  // DariTap package illustration (no brand, INN name + dose + pack). Used by the site and by Figma.
+  // o = { name, dose, pack, kind: tablet|capsule|sachet|bottle|syrup|dropper|spray|tube|vial, c: '#hex', uid }
+  function drugArt(o) {
+    const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const hx = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+    const mix = (c, t, k) => { const a = hx(c), b = hx(t); return '#' + a.map((v, i) => Math.round(v + (b[i] - v) * k).toString(16).padStart(2, '0')).join(''); };
+    const dk = (k) => mix(o.c, '#000000', k), lt = (k) => mix(o.c, '#ffffff', k);
+    const c = o.c, u = o.uid || 'a';
+    const sf = Math.max(6, Math.min(10, Math.floor(50 / (String(o.dose).length * 0.62))));
+    const wrap = (text, max) => {
+      const lines = []; let cur = '';
+      for (const w of String(text).split(/\s+/)) { if (cur && (cur + ' ' + w).length > max) { lines.push(cur); cur = w; } else cur = cur ? cur + ' ' + w : w; }
+      if (cur) lines.push(cur);
+      if (lines.length > 3) { lines.length = 3; lines[2] = lines[2].replace(/\s*\S*$/, '') + '…'; }
+      return lines;
+    };
+    const nameBlock = (x, y, width, maxChars, base, anchor) => {
+      const lines = wrap(String(o.name).toUpperCase(), maxChars);
+      const longest = Math.max(...lines.map((l) => l.length));
+      const fs = Math.max(8, Math.min(lines.length === 1 ? base : lines.length === 2 ? base - 3 : base - 5, Math.floor(width / (longest * 0.75))));
+      const svg = lines.map((l, i) => `<text x="${x}" y="${y + i * (fs + 2)}" font-size="${fs}" font-weight="800" fill="#163a2b" text-anchor="${anchor}" font-family="Inter, Arial, sans-serif">${esc(l)}</text>`).join('');
+      return { svg, bottom: y + (lines.length - 1) * (fs + 2) };
+    };
+    const doseTag = (x, y, anchor) => {
+      const w = Math.max(34, String(o.dose).length * 6.6 + 14), x0 = anchor === 'middle' ? x - w / 2 : x;
+      return `<rect x="${x0}" y="${y - 12}" width="${w}" height="17" rx="8.5" fill="${c}"/><text x="${x0 + w / 2}" y="${y + 1}" font-size="11" font-weight="700" fill="#fff" text-anchor="middle" font-family="Inter, Arial, sans-serif">${esc(o.dose)}</text>`;
+    };
+    const small = (x, y, t, anchor = 'start', col = '#4f6158') => `<text x="${x}" y="${y}" font-size="9.5" font-weight="600" fill="${col}" text-anchor="${anchor}" font-family="Inter, Arial, sans-serif">${esc(t)}</text>`;
+    const defs = `<defs>
+      <linearGradient id="bg${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${lt(0.93)}"/><stop offset="1" stop-color="${lt(0.82)}"/></linearGradient>
+      <linearGradient id="fr${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#eef2f0"/></linearGradient>
+      <linearGradient id="sd${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${dk(0.05)}"/><stop offset="1" stop-color="${dk(0.3)}"/></linearGradient>
+      <linearGradient id="mt${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f6f8"/><stop offset=".5" stop-color="#cfd6dc"/><stop offset="1" stop-color="#eef1f4"/></linearGradient>
+      <linearGradient id="gl${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7a3d12"/><stop offset=".35" stop-color="#b8692c"/><stop offset="1" stop-color="#6a3410"/></linearGradient>
+      <linearGradient id="cl${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#dfeaf0"/><stop offset=".35" stop-color="#ffffff"/><stop offset="1" stop-color="#cfdde6"/></linearGradient>
+      <linearGradient id="tb${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#f1f4f3"/><stop offset="1" stop-color="#d6dedb"/></linearGradient>
+      <linearGradient id="cp${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${dk(0.25)}"/><stop offset=".4" stop-color="${lt(0.15)}"/><stop offset="1" stop-color="${dk(0.3)}"/></linearGradient>
+    </defs>`;
+    const shadow = (cx, cy, rx) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${rx * 0.09}" fill="#0f2a1f" opacity=".12"/>`;
+    // ---- box (tablet, capsule, sachet, and behind small items) ----
+    const box = (x, y, w, h, d, withText) => {
+      const top = `<path d="M${x} ${y} L${x + d} ${y - d * 0.8} H${x + w + d} L${x + w} ${y} Z" fill="${lt(0.25)}"/>`;
+      const side = `<path d="M${x + w} ${y} L${x + w + d} ${y - d * 0.8} V${y + h - d * 0.8} L${x + w} ${y + h} Z" fill="url(#sd${u})"/>`;
+      let front = `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#fr${u})"/><rect x="${x}" y="${y}" width="${w}" height="12" fill="${c}"/><rect x="${x}" y="${y + h - 9}" width="${w}" height="9" fill="${lt(0.35)}"/>
+        <path d="M${x + w - 46} ${y + 12} Q${x + w - 10} ${y + h * 0.45} ${x + w - 34} ${y + h - 9} L${x + w} ${y + h - 9} L${x + w} ${y + 12} Z" fill="${lt(0.86)}"/>`;
+      if (withText) {
+        const nb = nameBlock(x + 12, y + 34, w - 30, 15, 19, 'start');
+        front += nb.svg + doseTag(x + 12, Math.min(nb.bottom + 24, y + h - 31), 'start') + small(x + 12, y + h - 14, o.pack);
+      }
+      return top + side + front;
+    };
+    const blister = (x, y, caps) => {
+      let s = `<g transform="rotate(-9 ${x + 50} ${y + 30})"><rect x="${x}" y="${y}" width="104" height="60" rx="8" fill="url(#mt${u})" stroke="#b9c2c9" stroke-width="1"/>`;
+      for (let r = 0; r < 2; r++) for (let k = 0; k < 3; k++) {
+        const cx = x + 20 + k * 32, cy = y + 17 + r * 26;
+        s += caps
+          ? `<g transform="rotate(-25 ${cx} ${cy})"><rect x="${cx - 13}" y="${cy - 6}" width="26" height="12" rx="6" fill="#fff" stroke="#c4ccd2"/><path d="M${cx} ${cy - 6} h7 a6 6 0 0 1 0 12 h-7 z" fill="${c}"/></g>`
+          : `<circle cx="${cx}" cy="${cy}" r="9" fill="#fff" stroke="#c4ccd2"/><circle cx="${cx - 3}" cy="${cy - 3}" r="3" fill="#ffffff" opacity=".9"/><line x1="${cx - 6}" y1="${cy}" x2="${cx + 6}" y2="${cy}" stroke="#d3d9de" stroke-width="1.2"/>`;
+      }
+      return s + '</g>';
+    };
+    const sachet = (x, y) => {
+      const zig = Array.from({ length: 9 }, (_, i) => `${x + i * 9} ${i % 2 ? y + 4 : y}`).join(' L');
+      return `<g transform="rotate(-8 ${x + 36} ${y + 40})"><path d="M${zig} L${x + 72} ${y + 4} V${y + 78} H${x} Z" fill="${lt(0.1)}"/><rect x="${x + 6}" y="${y + 18}" width="60" height="40" rx="4" fill="#fff"/>
+        <text x="${x + 36}" y="${y + 43}" font-size="${sf}" font-weight="800" fill="${c}" text-anchor="middle" font-family="Inter, Arial, sans-serif">${esc(o.dose)}</text></g>`;
+    };
+    // ---- bottle-like ----
+    const bottle = (cx, y, w, h, glass, cap, labelText) => {
+      const x = cx - w / 2;
+      let s = `<rect x="${cx - w * 0.22}" y="${y - 14}" width="${w * 0.44}" height="18" fill="${glass === 'amber' ? '#5e2d0c' : '#c9d6de'}"/>`;
+      s += cap;
+      s += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${w * 0.18}" fill="url(#${glass === 'amber' ? 'gl' : 'cl'}${u})" stroke="${glass === 'amber' ? '#5e2d0c' : '#b9c8d2'}" stroke-width="1"/>`;
+      const ly = y + h * 0.24, lh = h * 0.56;
+      s += `<rect x="${x + 4}" y="${ly}" width="${w - 8}" height="${lh}" fill="#fff"/><rect x="${x + 4}" y="${ly}" width="${w - 8}" height="7" fill="${c}"/><rect x="${x + 4}" y="${ly + lh - 5}" width="${w - 8}" height="5" fill="${lt(0.35)}"/>`;
+      if (labelText) {
+        const nb = nameBlock(cx, ly + 22, w - 16, 10, 14, 'middle');
+        s += nb.svg + doseTag(cx, Math.min(nb.bottom + 20, ly + lh - 22), 'middle') + small(cx, ly + lh - 9, o.pack, 'middle');
+      }
+      s += `<rect x="${x + 7}" y="${y + 8}" width="5" height="${h - 20}" rx="2.5" fill="#fff" opacity=".35"/>`;
+      return s;
+    };
+    let art = '';
+    const k = o.kind;
+    if (k === 'tablet' || k === 'capsule') {
+      art = shadow(160, 206, 130) + box(40, 82, 190, 116, 26, true) + blister(186, 146, k === 'capsule');
+    } else if (k === 'sachet') {
+      art = shadow(160, 206, 130) + box(40, 82, 190, 116, 26, true) + sachet(214, 128);
+    } else if (k === 'bottle' || k === 'syrup') {
+      const amber = k === 'syrup';
+      art = shadow(160, 214, 92) + box(176, 108, 92, 96, 18, false) + bottle(140, 66, 104, 146, amber ? 'amber' : 'clear', `<rect x="108" y="38" width="64" height="30" rx="5" fill="url(#cp${u})"/><rect x="108" y="62" width="64" height="5" fill="${dk(0.35)}"/>`, true);
+    } else if (k === 'dropper') {
+      art = shadow(160, 212, 100) + box(44, 66, 128, 140, 22, true) + bottle(222, 112, 64, 96, 'clear', `<path d="M210 70 L234 70 L230 98 L214 98 Z" fill="#f4f7f8" stroke="#c9d6de"/><rect x="206" y="96" width="32" height="18" rx="3" fill="url(#cp${u})"/>`, false)
+        + `<rect x="194" y="150" width="56" height="34" fill="#fff"/><rect x="194" y="150" width="56" height="5" fill="${c}"/><text x="222" y="172" font-size="${sf}" font-weight="800" fill="${c}" text-anchor="middle" font-family="Inter, Arial, sans-serif">${esc(o.dose)}</text>`;
+    } else if (k === 'spray') {
+      art = shadow(160, 212, 100) + box(44, 66, 128, 140, 22, true) + bottle(226, 112, 62, 98, 'clear', `<path d="M219 58 Q226 44 233 58 L236 96 L216 96 Z" fill="#f4f7f8" stroke="#c9d6de"/><rect x="208" y="94" width="36" height="20" rx="4" fill="url(#cp${u})"/>`, false)
+        + `<rect x="198" y="150" width="56" height="34" fill="#fff"/><rect x="198" y="150" width="56" height="5" fill="${c}"/><text x="226" y="172" font-size="${sf}" font-weight="800" fill="${c}" text-anchor="middle" font-family="Inter, Arial, sans-serif">${esc(o.dose)}</text>`;
+    } else if (k === 'tube') {
+      art = shadow(160, 196, 132)
+        + `<path d="M36 112 L48 104 L48 184 L36 176 Z" fill="#c9d3cf"/>` + Array.from({ length: 5 }, (_, i) => `<line x1="38" y1="${116 + i * 13}" x2="46" y2="${112 + i * 13}" stroke="#aab6b1" stroke-width="1"/>`).join('')
+        + `<path d="M48 104 H236 Q250 118 250 144 Q250 170 236 184 H48 Z" fill="url(#tb${u})" stroke="#c3ccc8"/><rect x="250" y="128" width="12" height="32" fill="#e7ecea"/><rect x="262" y="122" width="30" height="44" rx="5" fill="url(#cp${u})"/>`
+        + `<rect x="48" y="104" width="10" height="80" fill="${c}"/><path d="M200 104 H236 Q250 118 250 144 Q250 170 236 184 H200 Z" fill="${lt(0.2)}"/>`
+        + nameBlock(68, 132, 124, 14, 18, 'start').svg + doseTag(70, 166, 'start') + small(150, 168, o.pack);
+    } else if (k === 'vial') {
+      art = shadow(160, 210, 120) + box(40, 82, 150, 116, 24, true)
+        + `<rect x="212" y="96" width="40" height="16" rx="3" fill="url(#cp${u})"/><rect x="218" y="110" width="28" height="10" fill="#d7e1e7"/><rect x="206" y="118" width="52" height="84" rx="8" fill="url(#cl${u})" stroke="#b9c8d2"/>`
+        + `<rect x="208" y="138" width="48" height="40" fill="#fff"/><rect x="208" y="138" width="48" height="5" fill="${c}"/><text x="232" y="165" font-size="${sf}" font-weight="800" fill="${c}" text-anchor="middle" font-family="Inter, Arial, sans-serif">${esc(o.dose)}</text>`;
     }
-    if (cur) lines.push(cur);
-    if (lines.length > 3) { lines.length = 3; lines[2] = lines[2].replace(/\s*\S*$/, '') + '…'; }
-    return lines;
+    return `<svg viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg">${defs}<rect width="320" height="240" fill="url(#bg${u})"/>${art}</svg>`;
   }
+  function drugKind(p) {
+    const f = String((p.form && p.form.en) || '').toLowerCase();
+    if (/cream|gel|ointment/.test(f)) return 'tube';
+    if (/injection/.test(f)) return 'vial';
+    if (/powder/.test(f)) return 'sachet';
+    if (/drops/.test(f)) return 'dropper';
+    if (/spray/.test(f)) return 'spray';
+    if (/syrup|suspension/.test(f)) return 'syrup';
+    if (p.image === 'bottle') return 'bottle';
+    return p.image === 'capsule' ? 'capsule' : 'tablet';
+  }
+  let artSeq = 0;
   function productSvg(p) {
-    const c = CAT_COLORS[p.category] || '#0e9f5b';
-    const name = L(p.name);
-    const liquid = p.image === 'bottle';
-    const max = liquid ? 11 : 16;
-    const lines = wrapWords(name.toUpperCase(), max);
-    const base = lines.length === 1 ? (liquid ? 17 : 22) : lines.length === 2 ? (liquid ? 15 : 18) : (liquid ? 13 : 15);
-    const longest = Math.max(...lines.map((l) => l.length));
-    const fs = Math.max(9, Math.min(base, Math.floor((liquid ? 112 : 160) / (longest * 0.7))));
-    const text = (x, y0, anchor) => lines.map((l, i) => `<text x="${x}" y="${y0 + i * (fs + 3)}" font-size="${fs}" font-weight="800" fill="#163a2b" text-anchor="${anchor}" font-family="Inter, Arial, sans-serif">${esc(l)}</text>`).join('');
-    let art;
-    if (liquid) {
-      art = `<rect x="128" y="22" width="64" height="26" rx="5" fill="${c}"/><rect x="138" y="46" width="44" height="14" fill="${c}" opacity=".55"/>
-        <rect x="96" y="58" width="128" height="160" rx="22" fill="#fff" stroke="${c}" stroke-width="3"/>
-        <rect x="98" y="92" width="124" height="96" fill="${c}" opacity=".12"/><rect x="98" y="92" width="124" height="8" fill="${c}"/>
-        ${text(160, 122, 'middle')}
-        <text x="160" y="180" font-size="13" font-weight="700" fill="${c}" text-anchor="middle" font-family="Inter, Arial, sans-serif">${esc(L(p.dose))}</text>`;
-    } else {
-      const pill = p.image === 'capsule'
-        ? `<g transform="translate(232 150) rotate(-30)"><rect x="-22" y="-9" width="44" height="18" rx="9" fill="#fff" stroke="${c}" stroke-width="2"/><path d="M0 -9h13a9 9 0 0 1 0 18h-13z" fill="${c}"/></g>`
-        : `<circle cx="232" cy="150" r="15" fill="#fff" stroke="${c}" stroke-width="2"/><line x1="221" y1="150" x2="243" y2="150" stroke="${c}" stroke-width="2"/>`;
-      art = `<path d="M40 70 L62 48 H292 L270 70 Z" fill="${c}" opacity=".55"/><path d="M270 70 L292 48 V170 L270 192 Z" fill="${c}" opacity=".8"/>
-        <rect x="40" y="70" width="230" height="122" fill="#fff" stroke="${c}" stroke-width="2"/>
-        <rect x="40" y="70" width="230" height="14" fill="${c}"/><rect x="40" y="176" width="230" height="16" fill="${c}" opacity=".85"/>
-        ${text(54, 84 + 14 + fs, 'start')}
-        <text x="54" y="166" font-size="14" font-weight="700" fill="${c}" font-family="Inter, Arial, sans-serif">${esc(L(p.dose))}</text>
-        ${pill}`;
-    }
-    return `<svg viewBox="0 0 320 240" role="img" aria-label="${esc(name)}" xmlns="http://www.w3.org/2000/svg">
-      <rect width="320" height="240" fill="${c}" fill-opacity=".08"/>${art}
-      <text x="16" y="232" font-size="13" fill="${c}" font-family="Inter, sans-serif" font-weight="600">${esc(L(p.pack))}</text></svg>`;
+    const svg = drugArt({ name: L(p.name), dose: L(p.dose), pack: L(p.pack), kind: drugKind(p), c: CAT_COLORS[p.category] || '#0e9f5b', uid: 'a' + (++artSeq) });
+    return svg.replace('<svg ', `<svg role="img" aria-label="${esc(L(p.name))} ${esc(L(p.dose))} · ${esc(L(p.pack))}" `);
   }
 
   // Нақты фотолар public/img/products/ папкасында. Кілт — тауардың id-і (мысалы 'p-1').

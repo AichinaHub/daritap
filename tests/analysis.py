@@ -33,7 +33,7 @@ for p in P:
     c = cats.setdefault(p['category'], dict(category=p['category'], listings=0, searches=0, orders=0))
     c['listings'] += 1; c['searches'] += p['searches7d']; c['orders'] += p['orders7d']
 cats = sorted(cats.values(), key=lambda c: -c['searches'])
-for c in cats: c['conv'] = round(100 * c['orders'] / c['searches'], 1)
+for c in cats: c['conv'] = round(100 * c['orders'] / c['searches'], 1) if c['searches'] else 0.0
 r1 = [dict(id=p['id'], name=p['name']['en'], dose=p['dose']['en'], pack=p['pack']['en'], pharmacy=ph_name[p['pharmacyId']], reason=block(p), searches=p['searches7d'], alternatives=[dict(id=a['id'], pharmacy=ph_name[a['pharmacyId']], price=a['price'], diff=a['price'] - p['price']) for a in alts(p)]) for p in blocked]
 r2 = []
 for p in P:

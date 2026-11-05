@@ -15,4 +15,4 @@ cd .. && rm -rf data && PORT=3993 node server.js
 python3 e2e_tests.py http://localhost:3993 out   # → out/test_results.json, out/shots/
 ```
 
-Final run on 3 November 2026: 15 of 15 passed. The weekly search and order counts in `seed.js` are simulated.
+Final run on 5 November 2026: 15 of 15 passed. The weekly search and order counts in `seed.js` are simulated.
